@@ -7,14 +7,17 @@ import {
   Phone,
   FileText,
   ShieldCheck,
+  KeyRound,
 } from 'lucide-react';
 import { usePOSStore } from '../store/usePOSStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { toast } from 'sonner';
 
 export function SettingsPage() {
   const { settings, updateSettings, resetAllDemoData } = usePOSStore();
+  const { currentPin, changePin } = useAuthStore();
 
   const [formData, setFormData] = useState({
     choyxonaName: settings.choyxonaName || 'Choyxona POS',
@@ -23,6 +26,9 @@ export function SettingsPage() {
     receiptHeader: settings.receiptHeader || 'Xush kelibsiz!',
     receiptFooter: settings.receiptFooter || 'Tashrifingiz uchun rahmat!',
   });
+
+  const [newPin, setNewPin] = useState('');
+  const [pinError, setPinError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,10 +41,28 @@ export function SettingsPage() {
     toast.success('Sozlamalar muvaffaqiyatli saqlandi!');
   };
 
+  const handleChangePin = (e) => {
+    e.preventDefault();
+    setPinError('');
+
+    if (!/^\d{4}$/.test(newPin.trim())) {
+      setPinError('PIN-kod aniq 4 ta raqam bo‘lishi kerak (masalan: 1234)');
+      return;
+    }
+
+    const res = changePin(newPin.trim());
+    if (res.success) {
+      toast.success(`Yangi PIN-kod (${newPin}) muvaffaqiyatli o‘rnatildi!`);
+      setNewPin('');
+    } else {
+      setPinError(res.message);
+    }
+  };
+
   const handleReset = () => {
     if (
       window.confirm(
-        'Diqqat! Barcha demo ma’lumotlar (xonalar, buyurtmalar, to‘lovlar) dastlabki holatga qaytariladi. Davom etasizmi?'
+        'Diqqat! Barcha demo ma’lumotlar (xonalar, buyurtmalar, to‘lovlar, PIN-kod 1234) dastlabki holatga qaytariladi. Davom etasizmi?'
       )
     ) {
       resetAllDemoData();
@@ -53,7 +77,7 @@ export function SettingsPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-800">Tizim sozlamalari</h2>
           <p className="text-xs text-slate-500">
-            Choyxona ma’lumotlari va chek parametrlarini sozlash
+            Choyxona ma’lumotlari, kirish PIN-kodi va chek parametrlarini sozlash
           </p>
         </div>
       </div>
@@ -61,6 +85,7 @@ export function SettingsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Form (2 cols) */}
         <div className="md:col-span-2 space-y-6">
+          {/* Main info form */}
           <form
             onSubmit={handleSaveSettings}
             className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4"
@@ -128,6 +153,43 @@ export function SettingsPage() {
             </div>
           </form>
 
+          {/* Change PIN Card */}
+          <form
+            onSubmit={handleChangePin}
+            className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <div>
+                <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-emerald-600" />
+                  <span>Kirish PIN-kodini o‘zgartirish</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Hozirgi faol PIN-kod: <strong className="text-emerald-700">{currentPin || '1234'}</strong>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="w-full sm:w-60">
+                <Input
+                  placeholder="Yangi 4 xonali PIN"
+                  maxLength={4}
+                  value={newPin}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                    setNewPin(val);
+                    if (pinError) setPinError('');
+                  }}
+                  error={pinError}
+                />
+              </div>
+              <Button type="submit" variant="secondary" icon={Save}>
+                PIN-kodni saqlash
+              </Button>
+            </div>
+          </form>
+
           {/* Reset Demo Data Section */}
           <div className="bg-white p-6 rounded-2xl border border-rose-200 shadow-sm space-y-3">
             <div className="flex items-start justify-between">
@@ -167,6 +229,10 @@ export function SettingsPage() {
               ixtisoslashtirilgan tezkor buyurtma va hisob-kitob tizimi.
             </p>
             <div className="text-[11px] text-slate-500 space-y-1.5 pt-2 border-t border-slate-100">
+              <div className="flex justify-between">
+                <span>Kirish turi:</span>
+                <span className="font-bold text-emerald-700">4 xonali PIN-kod</span>
+              </div>
               <div className="flex justify-between">
                 <span>Versiya:</span>
                 <span className="font-bold text-slate-700">1.0.0 (Frontend Edition)</span>

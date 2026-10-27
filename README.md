@@ -25,9 +25,9 @@ Choyxona va milliy taomlar oshxonalari uchun maxsus ishlab chiqilgan zamonaviy, 
 
 ## 🔑 Demo hisob ma’lumotlari
 
-- **Login:** `admin`
-- **Parol:** `123456`
-- *(Login sahifasida bir marta bosish orqali to‘ldirish tugmasi ham mavjud)*
+- **Kirish usuli:** 4 xonali PIN-kod (Touch keypad yoki klaviatura orqali)
+- **Demo PIN:** `1234`
+- *(Kirish sahifasida bir marta bosish orqali to‘ldirish tugmasi mavjud. PIN-kodni Sozlamalar sahifasida o‘zgartirish mumkin)*
 
 ---
 

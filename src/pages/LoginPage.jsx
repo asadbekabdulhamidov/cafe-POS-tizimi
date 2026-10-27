@@ -1,143 +1,214 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Coffee, Eye, EyeOff, Lock, User, CheckCircle2 } from 'lucide-react';
+import { Coffee, Delete, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
 import { toast } from 'sonner';
 
 export function LoginPage() {
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('123456');
-  const [showPassword, setShowPassword] = useState(false);
+  const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [shake, setShake] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuthStore();
+  const { loginWithPin } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
+  const handleVerifyPin = useCallback(
+    (pinToTest) => {
+      setLoading(true);
+      setError('');
 
-    if (!username.trim() || !password) {
-      setError('Iltimos, login va parolni kiriting');
-      return;
-    }
+      setTimeout(() => {
+        const result = loginWithPin(pinToTest);
+        setLoading(false);
 
-    setLoading(true);
-    setTimeout(() => {
-      const result = login(username, password);
-      setLoading(false);
+        if (result.success) {
+          toast.success('Xush kelibsiz! Tizimga muvaffaqiyatli kirdingiz.');
+          navigate('/dashboard');
+        } else {
+          setError(result.message);
+          setShake(true);
+          setTimeout(() => setShake(false), 500);
+          setPin('');
+        }
+      }, 250);
+    },
+    [loginWithPin, navigate]
+  );
 
-      if (result.success) {
-        toast.success('Tizimga muvaffaqiyatli kirdingiz!');
-        navigate('/dashboard');
-      } else {
-        setError(result.message);
+  const handleAddDigit = useCallback(
+    (digit) => {
+      if (loading || pin.length >= 4) return;
+      setError('');
+      const newPin = pin + digit;
+      setPin(newPin);
+
+      // Auto-submit on 4th digit
+      if (newPin.length === 4) {
+        handleVerifyPin(newPin);
       }
-    }, 300);
-  };
+    },
+    [pin, loading, handleVerifyPin]
+  );
 
-  const handleFillDemo = () => {
-    setUsername('admin');
-    setPassword('123456');
+  const handleDeleteDigit = useCallback(() => {
+    if (loading) return;
     setError('');
+    setPin((prev) => prev.slice(0, -1));
+  }, [loading]);
+
+  const handleClearPin = useCallback(() => {
+    if (loading) return;
+    setError('');
+    setPin('');
+  }, [loading]);
+
+  // Physical keyboard support
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        handleAddDigit(e.key);
+      } else if (e.key === 'Backspace') {
+        handleDeleteDigit();
+      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+        handleClearPin();
+      } else if (e.key === 'Enter' && pin.length === 4) {
+        handleVerifyPin(pin);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleAddDigit, handleDeleteDigit, handleClearPin, handleVerifyPin, pin]);
+
+  const handleQuickDemo = () => {
+    setPin('1234');
+    handleVerifyPin('1234');
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        {/* Logo */}
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-600/30 mb-4">
+    <div className="min-h-screen bg-slate-100 flex flex-col justify-center items-center p-4 selection:bg-emerald-500 selection:text-white">
+      {/* Brand Header */}
+      <div className="text-center mb-6">
+        <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-600/25 mb-3.5">
           <Coffee className="w-8 h-8" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Choyxona POS
-        </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Elektron buyurtma va hisob-kitob tizimi
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          4 xonali PIN-kod orqali tizimga kiring
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl shadow-slate-200/50 rounded-2xl border border-slate-200/80 sm:px-10">
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            {error && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs font-medium">
-                {error}
-              </div>
-            )}
-
-            <div>
-              <Input
-                label="Login"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Loginni kiriting"
-                icon={User}
-                required
-                autoFocus
-              />
-            </div>
-
-            <div>
-              <div className="relative">
-                <Input
-                  label="Parol"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Parolni kiriting"
-                  icon={Lock}
-                  required
+      {/* Terminal Card */}
+      <div
+        className={`w-full max-w-sm bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-2xl shadow-slate-200/60 transition-transform ${
+          shake ? 'animate-shake' : ''
+        }`}
+      >
+        {/* PIN Dots Display */}
+        <div className="flex flex-col items-center justify-center mb-7">
+          <div className="flex items-center gap-4 py-2">
+            {[0, 1, 2, 3].map((idx) => {
+              const isFilled = pin.length > idx;
+              return (
+                <div
+                  key={idx}
+                  className={`w-4 h-4 rounded-full transition-all duration-200 ${
+                    error
+                      ? 'bg-rose-500 ring-4 ring-rose-100 scale-110'
+                      : isFilled
+                      ? 'bg-emerald-600 ring-4 ring-emerald-100 scale-110'
+                      : 'bg-slate-200 ring-2 ring-transparent'
+                  }`}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-[34px] text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer p-1"
-                  title={showPassword ? 'Parolni yashirish' : 'Parolni ko‘rsatish'}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Demo credentials hint box */}
-            <div className="p-3 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-xs text-emerald-800">
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Demo ma’lumotlar:
-                </span>
-                <button
-                  type="button"
-                  onClick={handleFillDemo}
-                  className="text-emerald-700 font-bold underline hover:text-emerald-900 cursor-pointer text-[11px]"
-                >
-                  To‘ldirish
-                </button>
-              </div>
-              <div className="text-[11px] text-emerald-700 font-mono">
-                Login: <span className="font-bold">admin</span> | Parol: <span className="font-bold">123456</span>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              loading={loading}
-              className="w-full shadow-md shadow-emerald-600/20"
-            >
-              Tizimga kirish
-            </Button>
-          </form>
+          {/* Status / Error Message */}
+          <div className="h-6 mt-2 flex items-center justify-center">
+            {loading ? (
+              <p className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 animate-pulse">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                Tekshirilmoqda...
+              </p>
+            ) : error ? (
+              <p className="text-xs font-semibold text-rose-600 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" />
+                {error}
+              </p>
+            ) : (
+              <p className="text-xs text-slate-400">PIN-kodni tering</p>
+            )}
+          </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
-          Choyxona POS © {new Date().getFullYear()}. Barcha huquqlar himoyalangan.
-        </p>
+        {/* 3x4 Numeric Keypad */}
+        <div className="grid grid-cols-3 gap-3 sm:gap-3.5 max-w-[280px] mx-auto">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            <button
+              key={num}
+              type="button"
+              onClick={() => handleAddDigit(String(num))}
+              disabled={loading || pin.length >= 4}
+              className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-emerald-50 active:text-emerald-700 active:scale-95 text-xl sm:text-2xl font-bold text-slate-800 transition-all border border-slate-200/80 shadow-xs flex items-center justify-center cursor-pointer select-none"
+            >
+              {num}
+            </button>
+          ))}
+
+          {/* Clear Button */}
+          <button
+            type="button"
+            onClick={handleClearPin}
+            disabled={loading || pin.length === 0}
+            className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 hover:bg-rose-50 hover:text-rose-600 active:scale-95 text-xs sm:text-sm font-bold text-slate-600 transition-all border border-slate-200/80 shadow-xs flex items-center justify-center cursor-pointer select-none disabled:opacity-40"
+            title="Tozalash"
+          >
+            Tozalash
+          </button>
+
+          {/* 0 Button */}
+          <button
+            type="button"
+            onClick={() => handleAddDigit('0')}
+            disabled={loading || pin.length >= 4}
+            className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 hover:bg-slate-100 active:bg-emerald-50 active:text-emerald-700 active:scale-95 text-xl sm:text-2xl font-bold text-slate-800 transition-all border border-slate-200/80 shadow-xs flex items-center justify-center cursor-pointer select-none"
+          >
+            0
+          </button>
+
+          {/* Backspace Button */}
+          <button
+            type="button"
+            onClick={handleDeleteDigit}
+            disabled={loading || pin.length === 0}
+            className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 hover:bg-slate-100 active:scale-95 text-slate-700 transition-all border border-slate-200/80 shadow-xs flex items-center justify-center cursor-pointer select-none disabled:opacity-40"
+            title="O‘chirish"
+          >
+            <Delete className="w-5 h-5 sm:w-6 sm:h-6" />
+          </button>
+        </div>
+
+        {/* Demo Fast Access Hint */}
+        <div className="mt-6 pt-5 border-t border-slate-100 text-center">
+          <button
+            type="button"
+            onClick={handleQuickDemo}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold transition-colors cursor-pointer border border-emerald-200/60"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Demo PIN: <strong>1234</strong> (Kiritish)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Footer Info */}
+      <div className="mt-6 text-center text-xs text-slate-400 flex items-center gap-1.5 justify-center">
+        <ShieldCheck className="w-4 h-4 text-slate-400" />
+        <span>Kassir / Xodim PIN-kod orqali himoyalangan</span>
       </div>
     </div>
   );

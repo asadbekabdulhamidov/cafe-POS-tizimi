@@ -13,6 +13,7 @@ import {
 
 const KEYS = {
   AUTH: 'choyxona_auth',
+  PIN: 'choyxona_pin',
   ROOMS: 'choyxona_rooms',
   MENU: 'choyxona_menu',
   ACTIVE_ORDERS: 'choyxona_active_orders',
@@ -40,6 +41,23 @@ export const storageService = {
       }
     } catch (e) {
       console.error('Failed to save auth to localStorage', e);
+    }
+  },
+
+  // 4-digit PIN (default '1234')
+  getPin() {
+    try {
+      return localStorage.getItem(KEYS.PIN) || '1234';
+    } catch {
+      return '1234';
+    }
+  },
+
+  setPin(pin) {
+    try {
+      localStorage.setItem(KEYS.PIN, String(pin));
+    } catch (e) {
+      console.error('Failed to save pin to localStorage', e);
     }
   },
 
@@ -141,6 +159,7 @@ export const storageService = {
       localStorage.setItem(KEYS.ACTIVE_ORDERS, JSON.stringify(INITIAL_ACTIVE_ORDERS));
       localStorage.setItem(KEYS.CLOSED_ORDERS, JSON.stringify(INITIAL_CLOSED_ORDERS));
       localStorage.setItem(KEYS.SETTINGS, JSON.stringify(INITIAL_SETTINGS));
+      localStorage.setItem(KEYS.PIN, '1234');
       return true;
     } catch (e) {
       console.error('Failed to reset demo data', e);
