@@ -1,17 +1,25 @@
 /**
  * Utility functions for currency and date formatting
+ * Supports both Uzbek Latin and Cyrillic
  */
 
 /**
- * Format a number to Uzbek Som currency format (e.g., 30 000 so'm)
+ * Format a number to Uzbek Som currency format (e.g., 30 000 so‘m or 30 000 сўм)
  * @param {number|string} amount
- * @param {boolean} includeSuffix - whether to include "so'm" suffix
+ * @param {boolean} includeSuffix - whether to include currency suffix
+ * @param {string|null} lang - 'latn' or 'cyrl'
  * @returns {string}
  */
-export function formatCurrency(amount, includeSuffix = true) {
+export function formatCurrency(amount, includeSuffix = true, lang = null) {
+  const currentLang =
+    lang ||
+    (typeof localStorage !== 'undefined'
+      ? localStorage.getItem('choyxona_lang') || 'latn'
+      : 'latn');
   const num = Number(amount) || 0;
   const formatted = num.toLocaleString('uz-UZ').replace(/,/g, ' ');
-  return includeSuffix ? `${formatted} so'm` : formatted;
+  const suffix = currentLang === 'cyrl' ? 'сўм' : 'so‘m';
+  return includeSuffix ? `${formatted} ${suffix}` : formatted;
 }
 
 /**
@@ -48,24 +56,32 @@ export function formatTime(date) {
 }
 
 /**
- * Format relative time (e.g. "12 daqiqa oldin")
+ * Format relative time (e.g. "12 daqiqa oldin" / "12 дақиқа олдин")
  * @param {string|Date} date
+ * @param {string|null} lang
  * @returns {string}
  */
-export function formatRelativeTime(date) {
+export function formatRelativeTime(date, lang = null) {
   if (!date) return '—';
   const d = new Date(date);
   if (isNaN(d.getTime())) return '—';
 
+  const currentLang =
+    lang ||
+    (typeof localStorage !== 'undefined'
+      ? localStorage.getItem('choyxona_lang') || 'latn'
+      : 'latn');
+  const isCyrl = currentLang === 'cyrl';
+
   const now = new Date();
   const diffInMinutes = Math.floor((now.getTime() - d.getTime()) / (1000 * 60));
 
-  if (diffInMinutes < 1) return 'Hozirgina';
-  if (diffInMinutes < 60) return `${diffInMinutes} daqiqa oldin`;
+  if (diffInMinutes < 1) return isCyrl ? 'Ҳозиргина' : 'Hozirgina';
+  if (diffInMinutes < 60) return `${diffInMinutes} ${isCyrl ? 'дақиқа олдин' : 'daqiqa oldin'}`;
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours} soat oldin`;
+  if (diffInHours < 24) return `${diffInHours} ${isCyrl ? 'соат олдин' : 'soat oldin'}`;
   const diffInDays = Math.floor(diffInHours / 24);
-  return `${diffInDays} kun oldin`;
+  return `${diffInDays} ${isCyrl ? 'кун олдин' : 'kun oldin'}`;
 }
 
 /**

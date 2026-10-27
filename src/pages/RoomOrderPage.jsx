@@ -15,6 +15,7 @@ import {
   DoorOpen,
 } from 'lucide-react';
 import { usePOSStore } from '../store/usePOSStore';
+import { useAppConfigStore } from '../store/useAppConfigStore';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
@@ -38,6 +39,8 @@ export function RoomOrderPage() {
     closeBill,
     isProcessingPayment,
   } = usePOSStore();
+
+  const { t, localize, lang } = useAppConfigStore();
 
   const room = rooms.find((r) => r.id === roomId);
 
@@ -116,9 +119,9 @@ export function RoomOrderPage() {
       <div className="py-12">
         <EmptyState
           icon={DoorOpen}
-          title="Xona topilmadi"
-          description="Bunday raqamli xona mavjud emas."
-          actionText="Xonalar ro‘yxatiga qaytish"
+          title={lang === 'cyrl' ? 'Жой топилмади' : 'Joy topilmadi'}
+          description={lang === 'cyrl' ? 'Бундай жой мавжуд эмас.' : 'Bunday joy mavjud emas.'}
+          actionText={lang === 'cyrl' ? 'Жойлар рўйхатига қайтиш' : 'Joylar ro‘yxatiga qaytish'}
           onAction={() => navigate('/rooms')}
         />
       </div>
@@ -128,7 +131,11 @@ export function RoomOrderPage() {
   // Add dish to order
   const handleAddItem = (menuItem) => {
     if (!menuItem.isAvailable) {
-      toast.error('Bu mahsulot hozirda mavjud emas!');
+      toast.error(
+        lang === 'cyrl'
+          ? 'Бу маҳсулот ҳозирда мавжуд эмас!'
+          : 'Bu mahsulot hozirda mavjud emas!'
+      );
       return;
     }
 
@@ -185,23 +192,39 @@ export function RoomOrderPage() {
   const handleApplyDiscount = () => {
     const val = Number(discountInput) || 0;
     if (val < 0) {
-      toast.error('Chegirma manfiy bo‘lishi mumkin emas');
+      toast.error(
+        lang === 'cyrl'
+          ? 'Чегирма манфий бўлиши мумкин эмас'
+          : 'Chegirma manfiy bo‘lishi mumkin emas'
+      );
       return;
     }
     if (val > subtotal) {
-      toast.error('Chegirma umumiy summadan katta bo‘lishi mumkin emas');
+      toast.error(
+        lang === 'cyrl'
+          ? 'Чегирма умумий суммадан катта бўлиши мумкин эмас'
+          : 'Chegirma umumiy summadan katta bo‘lishi mumkin emas'
+      );
       return;
     }
     setWorkingDiscount(val);
     setShowDiscountInput(false);
     setIsDirty(true);
-    toast.success(`Chegirma qo‘llandi: ${formatCurrency(val)}`);
+    toast.success(
+      lang === 'cyrl'
+        ? `Чегирма қўлланди: ${formatCurrency(val, true, lang)}`
+        : `Chegirma qo‘llandi: ${formatCurrency(val, true, lang)}`
+    );
   };
 
   // Save current order
   const handleSaveOrder = () => {
     if (workingItems.length === 0) {
-      toast.error('Buyurtmada hech qanday mahsulot yo‘q!');
+      toast.error(
+        lang === 'cyrl'
+          ? 'Буюртмада ҳеч қандай маҳсулот йўқ!'
+          : 'Buyurtmada hech qanday mahsulot yo‘q!'
+      );
       return;
     }
 
@@ -222,7 +245,11 @@ export function RoomOrderPage() {
 
     saveOrder(orderToSave);
     setIsDirty(false);
-    toast.success(`${room.name} uchun buyurtma muvaffaqiyatli saqlandi!`);
+    toast.success(
+      lang === 'cyrl'
+        ? `${localize(room.name)} учун буюртма сақланди!`
+        : `${room.name} uchun buyurtma muvaffaqiyatli saqlandi!`
+    );
   };
 
   // Confirm and close bill
@@ -252,7 +279,11 @@ export function RoomOrderPage() {
     if (res.success) {
       setIsPaymentModalOpen(false);
       setClosedReceipt(res.order);
-      toast.success(`${room.name} hisobi yopildi va to‘lov qabul qilindi!`);
+      toast.success(
+        lang === 'cyrl'
+          ? `${localize(room.name)} ҳисоби ёпилди ва тўлов қабул қилинди!`
+          : `${room.name} hisobi yopildi va to‘lov qabul qilindi!`
+      );
     } else {
       toast.error(res.message || 'Xatolik yuz berdi');
     }
@@ -263,7 +294,7 @@ export function RoomOrderPage() {
   return (
     <div className="space-y-4">
       {/* Top Navigation bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-wrap items-center justify-between gap-3 transition-colors duration-150">
         <div className="flex items-center gap-3">
           <Button
             variant="secondary"
@@ -271,24 +302,28 @@ export function RoomOrderPage() {
             icon={ArrowLeft}
             onClick={() => navigate('/rooms')}
           >
-            Xonalar
+            {t('order.back_to_places')}
           </Button>
 
-          <div className="h-6 w-px bg-slate-200 hidden sm:block" />
+          <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block" />
 
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold text-slate-900">{room.name}</h1>
+              <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                {localize(room.name)}
+              </h1>
               <Badge variant={isOccupied ? 'band' : 'bosh'}>
-                {isOccupied ? 'Band' : 'Bo‘sh'}
+                {isOccupied ? t('places.band') : t('places.bosh')}
               </Badge>
               {isDirty && (
-                <span className="text-[11px] font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                  Saqlanmagan o‘zgarishlar
+                <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/60">
+                  {lang === 'cyrl' ? 'Сақланмаган ўзгаришлар' : 'Saqlanmagan o‘zgarishlar'}
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500">Sig‘imi: {room.capacity}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {t('place_modal.capacity_label')}: {localize(room.capacity)}
+            </p>
           </div>
         </div>
 
@@ -302,7 +337,7 @@ export function RoomOrderPage() {
               onClick={handleSaveOrder}
               disabled={!isDirty}
             >
-              Saqlash
+              {t('btn.save')}
             </Button>
           )}
 
@@ -312,7 +347,11 @@ export function RoomOrderPage() {
             icon={Receipt}
             onClick={() => {
               if (workingItems.length === 0) {
-                toast.error('To‘lov qilish uchun avval buyurtmaga mahsulot qo‘shing!');
+                toast.error(
+                  lang === 'cyrl'
+                    ? 'Тўлов қилиш учун аввал буюртмага маҳсулот қўшинг!'
+                    : 'To‘lov qilish uchun avval buyurtmaga mahsulot qo‘shing!'
+                );
                 return;
               }
               setIsPaymentModalOpen(true);
@@ -320,7 +359,7 @@ export function RoomOrderPage() {
             disabled={workingItems.length === 0}
             className="shadow-sm shadow-emerald-600/20"
           >
-            Hisobni yopish
+            {t('order.close_bill')}
           </Button>
         </div>
       </div>
@@ -333,11 +372,11 @@ export function RoomOrderPage() {
           className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
             mobileTab === 'menu'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-white text-slate-700 border border-slate-200'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800'
           }`}
         >
           <Utensils className="w-4 h-4" />
-          <span>Taomlar menyusi</span>
+          <span>{t('order.menu_tab')}</span>
         </button>
         <button
           type="button"
@@ -345,11 +384,13 @@ export function RoomOrderPage() {
           className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 relative ${
             mobileTab === 'cart'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'bg-white text-slate-700 border border-slate-200'
+              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800'
           }`}
         >
           <ShoppingBag className="w-4 h-4" />
-          <span>Buyurtma ({workingItems.reduce((s, i) => s + i.quantity, 0)})</span>
+          <span>
+            {t('order.cart_tab')} ({workingItems.reduce((s, i) => s + i.quantity, 0)})
+          </span>
           {workingItems.length > 0 && (
             <span className="w-2 h-2 rounded-full bg-amber-400 absolute top-2 right-3" />
           )}
@@ -365,9 +406,9 @@ export function RoomOrderPage() {
           }`}
         >
           {/* Search & Category filter */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 transition-colors duration-150">
             <Input
-              placeholder="Mahsulot nomi yoki toifasi bo‘yicha qidirish..."
+              placeholder={t('order.search_dish')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               icon={Search}
@@ -377,6 +418,7 @@ export function RoomOrderPage() {
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               {INITIAL_CATEGORIES.map((cat) => {
                 const isActive = activeCategory === cat;
+                const label = cat === 'Barchasi' ? t('cat.all') : localize(cat);
                 return (
                   <button
                     key={cat}
@@ -385,10 +427,10 @@ export function RoomOrderPage() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                       isActive
                         ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    {cat}
+                    {label}
                   </button>
                 );
               })}
@@ -399,9 +441,13 @@ export function RoomOrderPage() {
           {filteredMenu.length === 0 ? (
             <EmptyState
               icon={Utensils}
-              title="Mahsulot topilmadi"
-              description="Qidiruv yoki toifa bo‘yicha hech narsa chiqmadi."
-              actionText="Filtrlarni tozalash"
+              title={lang === 'cyrl' ? 'Маҳсулот топилмади' : 'Mahsulot topilmadi'}
+              description={
+                lang === 'cyrl'
+                  ? 'Қидирув ёки тоифа бўйича ҳеч нарса чиқмади.'
+                  : 'Qidiruv yoki toifa bo‘yicha hech narsa chiqmadi.'
+              }
+              actionText={lang === 'cyrl' ? 'Филтрларни тозалаш' : 'Filtrlarni tozalash'}
               onAction={() => {
                 setActiveCategory('Barchasi');
                 setSearchQuery('');
@@ -416,12 +462,12 @@ export function RoomOrderPage() {
                   <div
                     key={item.id}
                     onClick={() => handleAddItem(item)}
-                    className={`bg-white rounded-2xl p-4 border transition-all duration-150 flex flex-col justify-between group cursor-pointer relative ${
+                    className={`bg-white dark:bg-slate-900 rounded-2xl p-4 border transition-all duration-150 flex flex-col justify-between group cursor-pointer relative ${
                       !item.isAvailable
-                        ? 'opacity-50 pointer-events-none border-slate-200'
+                        ? 'opacity-50 pointer-events-none border-slate-200 dark:border-slate-800'
                         : inOrderQty > 0
-                        ? 'border-emerald-300 ring-1 ring-emerald-200/60 shadow-sm hover:shadow-md'
-                        : 'border-slate-200/80 hover:border-slate-300 hover:shadow-md'
+                        ? 'border-emerald-300 dark:border-emerald-700 ring-1 ring-emerald-200/60 dark:ring-emerald-900/40 shadow-sm hover:shadow-md'
+                        : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md'
                     }`}
                   >
                     {/* Badge showing quantity in current order */}
@@ -432,28 +478,30 @@ export function RoomOrderPage() {
                     )}
 
                     <div>
-                      <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-                        <span className="bg-slate-100 px-2 py-0.5 rounded-md font-medium text-slate-600">
-                          {item.category}
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                        <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-medium text-slate-600 dark:text-slate-300">
+                          {localize(item.category)}
                         </span>
                         {!item.isAvailable && (
-                          <span className="text-rose-600 font-semibold">Tugagan</span>
+                          <span className="text-rose-600 dark:text-rose-400 font-semibold">
+                            {t('order.out_of_stock')}
+                          </span>
                         )}
                       </div>
 
-                      <h4 className="font-bold text-sm text-slate-900 group-hover:text-emerald-700 transition-colors line-clamp-1">
-                        {item.name}
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
+                        {localize(item.name)}
                       </h4>
                       {item.description && (
-                        <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
-                          {item.description}
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">
+                          {localize(item.description)}
                         </p>
                       )}
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
-                      <span className="font-extrabold text-sm text-slate-900">
-                        {formatCurrency(item.price)}
+                    <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                      <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
+                        {formatCurrency(item.price, true, lang)}
                       </span>
                       <button
                         type="button"
@@ -461,8 +509,8 @@ export function RoomOrderPage() {
                           e.stopPropagation();
                           handleAddItem(item);
                         }}
-                        className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center cursor-pointer"
-                        title="Buyurtmaga qo‘shish"
+                        className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center cursor-pointer"
+                        title={t('btn.add')}
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -480,25 +528,25 @@ export function RoomOrderPage() {
             mobileTab === 'menu' ? 'hidden lg:block' : 'block'
           }`}
         >
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col min-h-[500px]">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col min-h-[500px] transition-colors duration-150">
             {/* Order Card Header */}
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 rounded-t-2xl">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/40 rounded-t-2xl">
               <div>
-                <h3 className="font-bold text-slate-800 text-base flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-emerald-600" />
-                  <span>Joriy buyurtma</span>
+                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                  <span>{t('order.current_order')}</span>
                 </h3>
-                <p className="text-xs text-slate-500">
-                  {room.name} • {workingItems.reduce((s, i) => s + i.quantity, 0)} ta mahsulot
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {localize(room.name)} • {workingItems.reduce((s, i) => s + i.quantity, 0)} {t('unit.items')}
                 </p>
               </div>
 
               {currentOrder?.createdAt && (
                 <div className="text-right">
-                  <span className="text-[11px] text-slate-400 flex items-center gap-1 justify-end">
-                    <Clock className="w-3 h-3" /> Boshlangan:
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1 justify-end">
+                    <Clock className="w-3 h-3" /> {t('order.started')}
                   </span>
-                  <span className="text-xs font-semibold text-slate-700">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                     {formatTime(currentOrder.createdAt)}
                   </span>
                 </div>
@@ -506,49 +554,49 @@ export function RoomOrderPage() {
             </div>
 
             {/* Order Items List */}
-            <div className="p-4 flex-1 overflow-y-auto max-h-[380px] divide-y divide-slate-100">
+            <div className="p-4 flex-1 overflow-y-auto max-h-[380px] divide-y divide-slate-100 dark:divide-slate-800">
               {workingItems.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mb-3">
                     <Utensils className="w-6 h-6" />
                   </div>
-                  <h4 className="text-sm font-semibold text-slate-700">Buyurtma bo‘sh</h4>
-                  <p className="text-xs text-slate-400 max-w-xs mt-1">
-                    Chap tarafdagi menyudan mahsulotlarni tanlab qo‘shing.
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    {t('order.empty_cart')}
+                  </h4>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 max-w-xs mt-1">
+                    {t('order.empty_cart_desc')}
                   </p>
                 </div>
               ) : (
                 workingItems.map((item) => (
                   <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h5 className="font-bold text-xs sm:text-sm text-slate-800 truncate">
-                        {item.name}
+                      <h5 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">
+                        {localize(item.name)}
                       </h5>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
-                        {formatCurrency(item.price)} / dona
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                        {formatCurrency(item.price, true, lang)} / {t('unit.portion')}
                       </p>
                     </div>
 
                     {/* Quantity controls (- qty +) */}
-                    <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                       <button
                         type="button"
                         onClick={() => handleUpdateQuantity(item.id, -1)}
-                        className="w-6 h-6 rounded-lg bg-white text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer text-xs"
-                        title="Kamaytirish"
+                        className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
 
-                      <span className="w-7 text-center text-xs font-bold text-slate-800">
+                      <span className="w-7 text-center text-xs font-bold text-slate-800 dark:text-slate-100">
                         {item.quantity}
                       </span>
 
                       <button
                         type="button"
                         onClick={() => handleUpdateQuantity(item.id, 1)}
-                        className="w-6 h-6 rounded-lg bg-white text-slate-700 hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer text-xs"
-                        title="Ko‘paytirish"
+                        className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -556,16 +604,16 @@ export function RoomOrderPage() {
 
                     {/* Line total & delete */}
                     <div className="text-right shrink-0 min-w-[70px]">
-                      <p className="text-xs font-bold text-slate-900">
-                        {formatCurrency(item.price * item.quantity)}
+                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {formatCurrency(item.price * item.quantity, true, lang)}
                       </p>
                     </div>
 
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(item.id)}
-                      className="p-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
-                      title="O‘chirish"
+                      className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                      title={t('btn.delete')}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -575,49 +623,49 @@ export function RoomOrderPage() {
             </div>
 
             {/* Bottom Summary & Actions */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200/80 rounded-b-2xl space-y-3">
+            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200/80 dark:border-slate-800 rounded-b-2xl space-y-3">
               {/* Subtotal */}
-              <div className="flex items-center justify-between text-xs text-slate-600">
-                <span>Mahsulotlar jami:</span>
-                <span className="font-semibold">{formatCurrency(subtotal)}</span>
+              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+                <span>{t('order.subtotal')}</span>
+                <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(subtotal, true, lang)}</span>
               </div>
 
               {/* Discount Row */}
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-600">Chegirma:</span>
+                  <span className="text-slate-600 dark:text-slate-400">{t('order.discount')}</span>
                   {!showDiscountInput && (
                     <button
                       type="button"
                       onClick={() => setShowDiscountInput(true)}
-                      className="text-emerald-700 font-semibold hover:underline text-[11px] cursor-pointer"
+                      className="text-emerald-700 dark:text-emerald-400 font-semibold hover:underline text-[11px] cursor-pointer"
                     >
-                      {workingDiscount > 0 ? 'O‘zgartirish' : '+ Qo‘shish'}
+                      {workingDiscount > 0 ? t('order.change_discount') : t('order.add_discount')}
                     </button>
                   )}
                 </div>
-                <span className="font-semibold text-emerald-700">
-                  {workingDiscount > 0 ? `-${formatCurrency(workingDiscount)}` : '0 so‘m'}
+                <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                  {workingDiscount > 0 ? `-${formatCurrency(workingDiscount, true, lang)}` : `0 ${t('currency.som')}`}
                 </span>
               </div>
 
               {/* Discount Input Form */}
               {showDiscountInput && (
-                <div className="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center gap-2">
+                <div className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-2">
                   <input
                     type="number"
-                    placeholder="Chegirma summasi (so‘m)"
+                    placeholder={lang === 'cyrl' ? 'Чегирма суммаси (сўм)' : 'Chegirma summasi (so‘m)'}
                     value={discountInput}
                     onChange={(e) => setDiscountInput(e.target.value)}
-                    className="w-full text-xs rounded-lg border border-slate-200 px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    className="w-full text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   <Button size="sm" variant="primary" onClick={handleApplyDiscount}>
-                    Qo‘llash
+                    {t('order.apply')}
                   </Button>
                   <button
                     type="button"
                     onClick={() => setShowDiscountInput(false)}
-                    className="p-1 text-slate-400 hover:text-slate-600 cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -625,14 +673,14 @@ export function RoomOrderPage() {
               )}
 
               {/* Final Total */}
-              <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex items-baseline justify-between">
                 <div>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Yakuniy summa:
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    {t('order.final_total')}
                   </span>
                 </div>
-                <span className="text-xl font-black text-emerald-800">
-                  {formatCurrency(finalTotal)}
+                <span className="text-xl font-black text-emerald-800 dark:text-emerald-400">
+                  {formatCurrency(finalTotal, true, lang)}
                 </span>
               </div>
 
@@ -646,7 +694,7 @@ export function RoomOrderPage() {
                   disabled={workingItems.length === 0 || !isDirty}
                   className="w-full justify-center"
                 >
-                  Buyurtmani saqlash
+                  {t('order.save_order')}
                 </Button>
 
                 <Button
@@ -657,7 +705,7 @@ export function RoomOrderPage() {
                   disabled={workingItems.length === 0}
                   className="w-full justify-center shadow-md shadow-emerald-600/20"
                 >
-                  Hisobni yopish
+                  {t('order.close_bill')}
                 </Button>
               </div>
             </div>

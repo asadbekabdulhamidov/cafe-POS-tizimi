@@ -8,6 +8,7 @@ import {
   LayoutGrid,
 } from 'lucide-react';
 import { usePOSStore } from '../store/usePOSStore';
+import { useAppConfigStore } from '../store/useAppConfigStore';
 import { RoomCard } from '../features/rooms/RoomCard';
 import { PlaceModal } from '../features/rooms/PlaceModal';
 import { Input } from '../components/ui/Input';
@@ -17,6 +18,7 @@ import { toast } from 'sonner';
 
 export function RoomsPage() {
   const { rooms, activeOrders, addPlace, updatePlace, deletePlace } = usePOSStore();
+  const { t, lang } = useAppConfigStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'bosh' | 'band'
   const [typeFilter, setTypeFilter] = useState('all'); // 'all' | 'xona' | 'stol' | 'sori'
@@ -95,24 +97,43 @@ export function RoomsPage() {
   const handleSavePlace = (placeData) => {
     if (editingPlace) {
       updatePlace(editingPlace.id, placeData);
-      toast.success(`"${placeData.name}" muvaffaqiyatli yangilandi!`);
+      toast.success(
+        lang === 'cyrl'
+          ? `"${placeData.name}" муваффақиятли янгиланди!`
+          : `"${placeData.name}" muvaffaqiyatli yangilandi!`
+      );
     } else {
       addPlace(placeData);
-      toast.success(`Yangi ${placeData.name} oshxonaga qo‘shildi!`);
+      toast.success(
+        lang === 'cyrl'
+          ? `Янги ${placeData.name} ошхонага қўшилди!`
+          : `Yangi ${placeData.name} oshxonaga qo‘shildi!`
+      );
     }
   };
 
   // Delete place
   const handleDeletePlace = (place) => {
     if (place.status === 'band') {
-      toast.error(`"${place.name}" hozirda band! Avval uning hisobini yoping.`);
+      toast.error(
+        lang === 'cyrl'
+          ? `"${place.name}" ҳозирда банд! Аввал унинг ҳисобини ёпинг.`
+          : `"${place.name}" hozirda band! Avval uning hisobini yoping.`
+      );
       return;
     }
 
-    if (window.confirm(`Haqiqatan ham "${place.name}"ni ro‘yxatdan o‘chirmoqchimisiz?`)) {
+    const confirmMsg =
+      lang === 'cyrl'
+        ? `Ҳақиқатан ҳам "${place.name}"ни рўйхатдан ўчирмоқчимисиз?`
+        : `Haqiqatan ham "${place.name}"ni ro‘yxatdan o‘chirmoqchimisiz?`;
+
+    if (window.confirm(confirmMsg)) {
       const res = deletePlace(place.id);
       if (res.success) {
-        toast.success(`"${place.name}" o‘chirildi.`);
+        toast.success(
+          lang === 'cyrl' ? `"${place.name}" ўчирилди.` : `"${place.name}" o‘chirildi.`
+        );
       } else {
         toast.error(res.message);
       }
@@ -122,11 +143,11 @@ export function RoomsPage() {
   return (
     <div className="space-y-6">
       {/* Top Header & Fast Action */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-150">
         <div>
-          <h2 className="text-lg font-bold text-slate-800">Xonalar, Stollar va So‘rilar</h2>
-          <p className="text-xs text-slate-500">
-            Jami: {counts.total} ta joy ({counts.xonalar} ta xona, {counts.stollar} ta stol, {counts.sorilar} ta so‘ri)
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">{t('places.title')}</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {lang === 'cyrl' ? 'Жами:' : 'Jami:'} {counts.total} {t('unit.items')} ({counts.xonalar} {t('places.rooms').toLowerCase()}, {counts.stollar} {t('places.tables').toLowerCase()}, {counts.sorilar} {t('places.soris').toLowerCase()})
           </p>
         </div>
 
@@ -136,17 +157,17 @@ export function RoomsPage() {
           onClick={handleOpenAdd}
           className="shadow-sm shadow-emerald-600/20"
         >
-          Yangi joy qo‘shish
+          {t('places.add_new')}
         </Button>
       </div>
 
       {/* Filters & Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-3.5">
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3.5 transition-colors duration-150">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Search */}
           <div className="w-full md:w-72">
             <Input
-              placeholder="Qidirish (stol, so‘ri, xona)..."
+              placeholder={t('places.search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               icon={Search}
@@ -154,19 +175,19 @@ export function RoomsPage() {
           </div>
 
           {/* Place Type Filters (Tabs) */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl overflow-x-auto">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-x-auto">
             <button
               type="button"
               onClick={() => setTypeFilter('all')}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 typeFilter === 'all'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Barchasi</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-200/70">
+              <span>{t('places.all')}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-200/70 dark:bg-slate-600">
                 {counts.total}
               </span>
             </button>
@@ -177,14 +198,14 @@ export function RoomsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 typeFilter === 'xona'
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <DoorOpen className="w-3.5 h-3.5" />
-              <span>Xonalar</span>
+              <span>{t('places.rooms')}</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded ${
-                  typeFilter === 'xona' ? 'bg-emerald-700 text-white' : 'bg-slate-200/70'
+                  typeFilter === 'xona' ? 'bg-emerald-700 text-white' : 'bg-slate-200/70 dark:bg-slate-600'
                 }`}
               >
                 {counts.xonalar}
@@ -197,14 +218,14 @@ export function RoomsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 typeFilter === 'stol'
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <UtensilsCrossed className="w-3.5 h-3.5" />
-              <span>Stollar</span>
+              <span>{t('places.tables')}</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded ${
-                  typeFilter === 'stol' ? 'bg-blue-700 text-white' : 'bg-slate-200/70'
+                  typeFilter === 'stol' ? 'bg-blue-700 text-white' : 'bg-slate-200/70 dark:bg-slate-600'
                 }`}
               >
                 {counts.stollar}
@@ -217,14 +238,14 @@ export function RoomsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 typeFilter === 'sori'
                   ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>So‘rilar</span>
+              <span>{t('places.soris')}</span>
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded ${
-                  typeFilter === 'sori' ? 'bg-amber-700 text-white' : 'bg-slate-200/70'
+                  typeFilter === 'sori' ? 'bg-amber-700 text-white' : 'bg-slate-200/70 dark:bg-slate-600'
                 }`}
               >
                 {counts.sorilar}
@@ -234,18 +255,18 @@ export function RoomsPage() {
         </div>
 
         {/* Status Filter Sub-bar */}
-        <div className="flex items-center gap-2 pt-2 border-t border-slate-100 text-xs">
-          <span className="text-slate-400 font-medium">Holat:</span>
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <span className="text-slate-400 dark:text-slate-500 font-medium">{t('places.status')}</span>
           <button
             type="button"
             onClick={() => setStatusFilter('all')}
             className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer font-medium ${
               statusFilter === 'all'
-                ? 'bg-slate-800 text-white'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-slate-800 dark:bg-slate-700 text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
-            Barchasi ({counts.total})
+            {t('places.all')} ({counts.total})
           </button>
           <button
             type="button"
@@ -253,10 +274,10 @@ export function RoomsPage() {
             className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer font-medium ${
               statusFilter === 'band'
                 ? 'bg-amber-500 text-white'
-                : 'text-slate-600 hover:bg-slate-100'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
-            Band ({counts.band})
+            {t('places.band')} ({counts.band})
           </button>
           <button
             type="button"
@@ -264,10 +285,10 @@ export function RoomsPage() {
             className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer font-medium ${
               statusFilter === 'bosh'
                 ? 'bg-emerald-600 text-white'
-                : 'text-slate-600 hover:bg-slate-100'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
-            Bo‘sh ({counts.bosh})
+            {t('places.bosh')} ({counts.bosh})
           </button>
         </div>
       </div>
@@ -276,13 +297,13 @@ export function RoomsPage() {
       {filteredRooms.length === 0 ? (
         <EmptyState
           icon={DoorOpen}
-          title="Hech qanday joy topilmadi"
+          title={t('places.not_found')}
           description={
             searchQuery
-              ? `"${searchQuery}" so‘rovi bo‘yicha hech qanday xona, stol yoki so‘ri mos kelmadi.`
-              : 'Tanlangan filtrlar bo‘yicha joylar mavjud emas.'
+              ? `"${searchQuery}" бўйича ҳеч қандай жой топилмади.`
+              : 'Танланган филтрлар бўйича жойлар мавжуд эмас.'
           }
-          actionText="Yangi joy qo‘shish"
+          actionText={t('places.add_new')}
           onAction={handleOpenAdd}
         />
       ) : (
