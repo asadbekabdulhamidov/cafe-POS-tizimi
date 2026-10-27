@@ -72,7 +72,7 @@ export function DashboardPage() {
             icon={DoorOpen}
             className="bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm"
           >
-            Xonalarni ko‘rish
+            Joylar ro‘yxati
           </Button>
           <Button
             variant="primary"
@@ -88,14 +88,14 @@ export function DashboardPage() {
       {/* 4 Primary Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Jami xonalar"
+          title="Jami joylar"
           value={`${totalRooms} ta`}
-          subvalue={`${emptyRoomsCount} ta bo‘sh xona mavjud`}
+          subvalue={`${emptyRoomsCount} ta bo‘sh joy mavjud`}
           icon={DoorOpen}
           color="slate"
         />
         <StatCard
-          title="Band xonalar"
+          title="Band joylar"
           value={`${occupiedRooms.length} ta`}
           subvalue={`Bandlik darajasi: ${Math.round((occupiedRooms.length / (totalRooms || 1)) * 100)}%`}
           icon={Clock}
@@ -104,7 +104,7 @@ export function DashboardPage() {
         <StatCard
           title="Ochiq hisoblar"
           value={formatCurrency(activeOrdersTotal)}
-          subvalue={`${activeOrders.length} ta faol xona hisobi`}
+          subvalue={`${activeOrders.length} ta faol hisob`}
           icon={Receipt}
           color="blue"
         />
@@ -124,8 +124,8 @@ export function DashboardPage() {
           <Card>
             <CardHeader>
               <div>
-                <h3 className="font-bold text-slate-800 text-base">Hozir band bo‘lgan xonalar</h3>
-                <p className="text-xs text-slate-500">Mijozlar ovqatlanayotgan va buyurtma bergan xonalar</p>
+                <h3 className="font-bold text-slate-800 text-base">Hozir band bo‘lgan joylar</h3>
+                <p className="text-xs text-slate-500">Mijozlar ovqatlanayotgan xonalar, stollar va so‘rilar</p>
               </div>
               <Button
                 variant="ghost"

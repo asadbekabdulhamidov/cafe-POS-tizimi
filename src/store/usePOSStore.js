@@ -294,6 +294,62 @@ export const usePOSStore = create((set, get) => ({
     get()._persist();
   },
 
+  // Places (Rooms, Tables, So'rilar) CRUD
+  addPlace: (placeData) => {
+    const { rooms } = get();
+    const newPlace = {
+      id: generateId(placeData.type || 'joy'),
+      name: placeData.name.trim(),
+      type: placeData.type || 'xona',
+      capacity: placeData.capacity?.trim() || '4-6 kishi',
+      status: 'bosh',
+      activeOrderId: null,
+    };
+    const updated = [...rooms, newPlace];
+    set({ rooms: updated });
+    get()._persist();
+    return newPlace;
+  },
+
+  updatePlace: (id, placeData) => {
+    const { rooms, activeOrders } = get();
+    const updatedRooms = rooms.map((r) =>
+      r.id === id
+        ? {
+            ...r,
+            name: placeData.name?.trim() ?? r.name,
+            type: placeData.type ?? r.type,
+            capacity: placeData.capacity?.trim() ?? r.capacity,
+          }
+        : r
+    );
+    const updatedOrders = activeOrders.map((o) =>
+      o.roomId === id ? { ...o, roomName: placeData.name?.trim() ?? o.roomName } : o
+    );
+
+    set({ rooms: updatedRooms, activeOrders: updatedOrders });
+    get()._persist();
+    return { success: true };
+  },
+
+  deletePlace: (id) => {
+    const { rooms } = get();
+    const place = rooms.find((r) => r.id === id);
+    if (!place) {
+      return { success: false, message: 'Joy topilmadi!' };
+    }
+    if (place.status === 'band') {
+      return {
+        success: false,
+        message: 'Bu joy hozirda band! O‘chirishdan oldin hisobni yoping.',
+      };
+    }
+    const updated = rooms.filter((r) => r.id !== id);
+    set({ rooms: updated });
+    get()._persist();
+    return { success: true };
+  },
+
   // Update Settings
   updateSettings: (newSettings) => {
     const updated = { ...get().settings, ...newSettings };

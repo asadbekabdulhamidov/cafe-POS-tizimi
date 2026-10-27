@@ -33,7 +33,7 @@ export function Sidebar({ isOpen, onClose }) {
     },
     {
       to: '/rooms',
-      label: 'Xonalar',
+      label: 'Xona va Stollar',
       icon: DoorOpen,
       badge: occupiedRoomsCount > 0 ? `${occupiedRoomsCount} band` : null,
       badgeColor: 'bg-amber-100 text-amber-800',

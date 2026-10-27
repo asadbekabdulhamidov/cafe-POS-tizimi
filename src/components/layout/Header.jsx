@@ -21,7 +21,7 @@ export function Header({ onOpenSidebar }) {
 
   const pageTitles = {
     '/dashboard': 'Asosiy Dashboard',
-    '/rooms': 'Xonalar boshqaruvi',
+    '/rooms': 'Xonalar, Stollar va So‘rilar',
     '/menu': 'Taomlar menyusi',
     '/reports': 'Hisobotlar va Tahlil',
     '/settings': 'Tizim sozlamalari',
@@ -29,7 +29,7 @@ export function Header({ onOpenSidebar }) {
 
   const getTitle = () => {
     if (location.pathname.startsWith('/rooms/')) {
-      return 'Xona buyurtmasi';
+      return 'Buyurtma va hisob-kitob';
     }
     return pageTitles[location.pathname] || 'Choyxona POS';
   };
@@ -83,7 +83,7 @@ export function Header({ onOpenSidebar }) {
           <DoorOpen className="w-4 h-4 text-emerald-600" />
           <span className="text-slate-600">Band:</span>
           <span className="font-bold text-emerald-700">
-            {occupiedCount} / {totalCount} xona
+            {occupiedCount} / {totalCount} ta band
           </span>
         </div>
 

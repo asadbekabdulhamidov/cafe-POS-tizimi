@@ -3,14 +3,23 @@
  */
 
 export const INITIAL_ROOMS = [
-  { id: '1', name: '1-xona', capacity: '6-8 kishi', status: 'bosh', activeOrderId: null },
-  { id: '2', name: '2-xona', capacity: '8-10 kishi', status: 'band', activeOrderId: 'ord_demo_2' },
-  { id: '3', name: '3-xona', capacity: '4-6 kishi', status: 'bosh', activeOrderId: null },
-  { id: '4', name: '4-xona', capacity: '10-12 kishi', status: 'bosh', activeOrderId: null },
-  { id: '5', name: '5-xona', capacity: '6-8 kishi', status: 'band', activeOrderId: 'ord_demo_5' },
-  { id: '6', name: '6-xona', capacity: '8-10 kishi', status: 'bosh', activeOrderId: null },
-  { id: '7', name: '7-xona', capacity: '4-6 kishi', status: 'band', activeOrderId: 'ord_demo_7' },
-  { id: '8', name: '8-xona', capacity: '12-15 kishi', status: 'bosh', activeOrderId: null },
+  // Xonalar (VIP / Alohida kabinalar)
+  { id: 'x_1', name: '1-xona', type: 'xona', capacity: '6-8 kishi', status: 'bosh', activeOrderId: null },
+  { id: 'x_2', name: '2-xona', type: 'xona', capacity: '8-10 kishi', status: 'band', activeOrderId: 'ord_demo_2' },
+  { id: 'x_3', name: '3-xona', type: 'xona', capacity: '4-6 kishi', status: 'bosh', activeOrderId: null },
+  { id: 'x_4', name: '4-xona', type: 'xona', capacity: '10-12 kishi', status: 'bosh', activeOrderId: null },
+
+  // Stollar (Zaldagi stollar)
+  { id: 's_1', name: '1-stol', type: 'stol', capacity: '4 kishi', status: 'bosh', activeOrderId: null },
+  { id: 's_2', name: '2-stol', type: 'stol', capacity: '4 kishi', status: 'band', activeOrderId: 'ord_demo_5' },
+  { id: 's_3', name: '3-stol', type: 'stol', capacity: '6 kishi', status: 'bosh', activeOrderId: null },
+  { id: 's_4', name: '4-stol', type: 'stol', capacity: '2-4 kishi', status: 'bosh', activeOrderId: null },
+
+  // So'rilar (Tapchanlar / Chorpoyalar)
+  { id: 't_1', name: '1-so‘ri', type: 'sori', capacity: '8-10 kishi', status: 'band', activeOrderId: 'ord_demo_7' },
+  { id: 't_2', name: '2-so‘ri', type: 'sori', capacity: '6-8 kishi', status: 'bosh', activeOrderId: null },
+  { id: 't_3', name: '3-so‘ri', type: 'sori', capacity: '8-10 kishi', status: 'bosh', activeOrderId: null },
+  { id: 't_4', name: '4-so‘ri', type: 'sori', capacity: '10-12 kishi', status: 'bosh', activeOrderId: null },
 ];
 
 export const INITIAL_CATEGORIES = [
@@ -137,7 +146,7 @@ const hoursAgo = (hours) => new Date(now.getTime() - hours * 3600000).toISOStrin
 export const INITIAL_ACTIVE_ORDERS = [
   {
     id: 'ord_demo_2',
-    roomId: '2',
+    roomId: 'x_2',
     roomName: '2-xona',
     status: 'active',
     createdAt: minutesAgo(42),
@@ -155,8 +164,8 @@ export const INITIAL_ACTIVE_ORDERS = [
   },
   {
     id: 'ord_demo_5',
-    roomId: '5',
-    roomName: '5-xona',
+    roomId: 's_2',
+    roomName: '2-stol',
     status: 'active',
     createdAt: minutesAgo(28),
     updatedAt: minutesAgo(10),
@@ -173,8 +182,8 @@ export const INITIAL_ACTIVE_ORDERS = [
   },
   {
     id: 'ord_demo_7',
-    roomId: '7',
-    roomName: '7-xona',
+    roomId: 't_1',
+    roomName: '1-so‘ri',
     status: 'active',
     createdAt: minutesAgo(12),
     updatedAt: minutesAgo(12),
@@ -193,7 +202,7 @@ export const INITIAL_ACTIVE_ORDERS = [
 export const INITIAL_CLOSED_ORDERS = [
   {
     id: 'ord_hist_1',
-    roomId: '1',
+    roomId: 'x_1',
     roomName: '1-xona',
     status: 'closed',
     createdAt: hoursAgo(4),
@@ -212,8 +221,8 @@ export const INITIAL_CLOSED_ORDERS = [
   },
   {
     id: 'ord_hist_2',
-    roomId: '3',
-    roomName: '3-xona',
+    roomId: 's_3',
+    roomName: '3-stol',
     status: 'closed',
     createdAt: hoursAgo(3),
     closedAt: hoursAgo(1.5),
@@ -231,8 +240,8 @@ export const INITIAL_CLOSED_ORDERS = [
   },
   {
     id: 'ord_hist_3',
-    roomId: '4',
-    roomName: '4-xona',
+    roomId: 't_4',
+    roomName: '4-so‘ri',
     status: 'closed',
     createdAt: hoursAgo(2),
     closedAt: hoursAgo(0.8),

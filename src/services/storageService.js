@@ -65,7 +65,17 @@ export const storageService = {
   getRooms() {
     try {
       const data = localStorage.getItem(KEYS.ROOMS);
-      return data ? JSON.parse(data) : INITIAL_ROOMS;
+      const rooms = data ? JSON.parse(data) : INITIAL_ROOMS;
+      return rooms.map((r) => ({
+        ...r,
+        type:
+          r.type ||
+          (r.name?.toLowerCase().includes('stol')
+            ? 'stol'
+            : r.name?.toLowerCase().includes('sori') || r.name?.toLowerCase().includes('so‘ri')
+            ? 'sori'
+            : 'xona'),
+      }));
     } catch {
       return INITIAL_ROOMS;
     }
