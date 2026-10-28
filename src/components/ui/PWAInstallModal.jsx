@@ -8,6 +8,7 @@ import {
   CheckCircle,
   ExternalLink,
   Laptop,
+  QrCode,
 } from 'lucide-react';
 import { Modal } from './Modal';
 import { Button } from './Button';
@@ -105,6 +106,30 @@ export function PWAInstallModal({ isOpen, onClose }) {
                 ? (lang === 'cyrl' ? 'Ўрнатилган' : 'O‘rnatilgan')
                 : (lang === 'cyrl' ? 'Экранга ўрнатиш тайёр' : 'Ekranga o‘rnatish tayyor')}
             </span>
+          </div>
+        </div>
+
+        {/* QR Code Section for phone camera scan */}
+        <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center gap-3">
+          <div className="p-1.5 bg-white rounded-lg border border-slate-200 shrink-0">
+            <img
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(
+                typeof window !== 'undefined' ? window.location.origin : 'https://cafe-pos-tizimi.vercel.app'
+              )}`}
+              alt="QR Code"
+              className="w-24 h-24"
+            />
+          </div>
+          <div className="text-left space-y-1">
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+              <QrCode className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span>{lang === 'cyrl' ? 'Телефон камерасида очиш (QR-код):' : 'Telefon kamerasida ochish (QR-kod):'}</span>
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              {lang === 'cyrl'
+                ? 'Телефон камерасини ушбу QR-кодга қаратинг ва чиққан ҳаволани босинг. Узун манзилларни қўлда ёзишга ҳожат йўқ!'
+                : 'Telefon kamerasini ushbu QR-kodga qarating va chiqqan havolani bosing. Uzun manzillarni qo‘lda yozishga hojat yo‘q!'}
+            </p>
           </div>
         </div>
 
