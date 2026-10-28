@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+  <!-- Background with smooth rounded corners for app icon -->
+  <rect width="512" height="512" rx="115" fill="url(#bg)" />
+  
+  <!-- Outer Glow Ring -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="6" />
+
+  <!-- Teapot / Choynak & Steam -->
+  <g filter="url(#shadow)">
+    <!-- Steam curls in gold -->
+    <path d="M236 135 Q 248 105, 236 80 Q 246 60, 256 45" stroke="url(#gold)" stroke-width="12" stroke-linecap="round" fill="none" />
+    <path d="M276 125 Q 288 100, 276 75" stroke="url(#gold)" stroke-width="10" stroke-linecap="round" fill="none" />
+    
+    <!-- Spout (Burun) -->
+    <path d="M185 245 C 145 245, 105 205, 95 185 C 102 182, 118 182, 126 190 C 138 206, 160 228, 185 235 Z" fill="#ffffff" />
+    
+    <!-- Handle (Dasta) -->
+    <path d="M330 235 C 385 240, 415 290, 375 338 C 364 350, 350 342, 355 330 C 380 295, 365 262, 330 252 Z" fill="#ffffff" />
+    
+    <!-- Teapot Body -->
+    <path d="M175 225 C 175 205, 337 205, 337 225 C 348 318, 310 368, 256 368 C 202 368, 164 318, 175 225 Z" fill="#ffffff" />
+    
+    <!-- Lid (Qopqoq) -->
+    <path d="M210 210 C 210 185, 302 185, 302 210 Z" fill="#f8fafc" />
+    <circle cx="256" cy="175" r="16" fill="url(#gold)" />
+    
+    <!-- Traditional Ornament Line -->
+    <path d="M190 280 Q 256 315, 322 280" fill="none" stroke="#059669" stroke-width="6" stroke-linecap="round" />
+  </g>
+
+  <!-- POS Badge -->
+  <g filter="url(#shadow)">
+    <rect x="176" y="405" width="160" height="46" rx="23" fill="url(#gold)" />
+    <text x="256" y="437" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="900" fill="#064e3b" text-anchor="middle" letter-spacing="2.5">POS</text>
+  </g>
+</svg>

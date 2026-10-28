@@ -11,12 +11,15 @@ import {
   Sun,
   Moon,
   Languages,
+  Download,
+  Smartphone,
 } from 'lucide-react';
 import { usePOSStore } from '../store/usePOSStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAppConfigStore } from '../store/useAppConfigStore';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { PWAInstallModal } from '../components/ui/PWAInstallModal';
 import { toast } from 'sonner';
 
 export function SettingsPage() {
@@ -34,6 +37,7 @@ export function SettingsPage() {
 
   const [newPin, setNewPin] = useState('');
   const [pinError, setPinError] = useState('');
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -332,6 +336,30 @@ export function SettingsPage() {
 
         {/* Right Info Cards (1 col) */}
         <div className="space-y-4">
+          {/* PWA App Install Promo Card */}
+          <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 p-5 rounded-2xl text-white shadow-sm space-y-3">
+            <div className="flex items-center gap-2.5">
+              <Smartphone className="w-5 h-5 text-amber-300" />
+              <h4 className="font-bold text-sm tracking-tight">
+                {lang === 'cyrl' ? 'Иловани экранга ўрнатиш' : 'Ilovani ekranga o‘rnatish'}
+              </h4>
+            </div>
+            <p className="text-xs text-emerald-100 leading-relaxed">
+              {lang === 'cyrl'
+                ? 'Тизимни Android, iPhone ёки Windows Моноблок экранига худди Play Market/App Store дастуридек алоҳида белги билан ўрнатиб олинг.'
+                : 'Tizimni Android, iPhone yoki Windows Monoblok ekraniga xuddi Play Market/App Store dasturidek alohida belgi bilan o‘rnatib oling.'}
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={Download}
+              className="w-full justify-center bg-white text-emerald-900 hover:bg-emerald-50 border-transparent shadow-xs"
+              onClick={() => setIsInstallModalOpen(true)}
+            >
+              {t('pwa.install_btn')}
+            </Button>
+          </div>
+
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3 transition-colors">
             <div className="flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400">
               <ShieldCheck className="w-5 h-5" />
@@ -391,6 +419,12 @@ export function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* PWA Install Modal */}
+      <PWAInstallModal
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
+      />
     </div>
   );
 }

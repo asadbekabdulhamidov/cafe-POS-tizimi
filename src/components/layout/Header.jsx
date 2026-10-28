@@ -8,10 +8,12 @@ import {
   Sun,
   Moon,
   Languages,
+  Download,
 } from 'lucide-react';
 import { usePOSStore } from '../../store/usePOSStore';
 import { useAppConfigStore } from '../../store/useAppConfigStore';
 import { Button } from '../ui/Button';
+import { PWAInstallModal } from '../ui/PWAInstallModal';
 import { toast } from 'sonner';
 
 export function Header({ onOpenSidebar }) {
@@ -20,6 +22,7 @@ export function Header({ onOpenSidebar }) {
   const { rooms, resetAllDemoData } = usePOSStore();
   const { theme, toggleTheme, lang, toggleLang, t } = useAppConfigStore();
   const [time, setTime] = useState(() => new Date());
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -127,6 +130,16 @@ export function Header({ onOpenSidebar }) {
           </span>
         </div>
 
+        {/* PWA / App Install Button */}
+        <button
+          onClick={() => setIsInstallModalOpen(true)}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-700/80 bg-emerald-50 dark:bg-emerald-950/60 text-xs font-bold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors cursor-pointer"
+          title={t('pwa.install_btn')}
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span className="hidden md:inline">{t('pwa.install_btn')}</span>
+        </button>
+
         {/* Reset Demo Data button */}
         <button
           onClick={handleResetData}
@@ -148,6 +161,12 @@ export function Header({ onOpenSidebar }) {
           <span className="sm:hidden">{lang === 'cyrl' ? 'Буюртма' : 'Buyurtma'}</span>
         </Button>
       </div>
+
+      {/* PWA Installation Modal */}
+      <PWAInstallModal
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
+      />
     </header>
   );
 }

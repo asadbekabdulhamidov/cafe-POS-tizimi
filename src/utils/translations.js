@@ -262,6 +262,18 @@ export const DICTIONARY = {
   'payment.quick_bills': { latn: 'Tezkor naqd kupyuralar:', cyrl: 'Тезкор нақд купюралар:' },
   'receipt.given': { latn: 'Mijoz berdi:', cyrl: 'Мижоз берди:' },
   'receipt.change': { latn: 'Qaytim:', cyrl: 'Қайтим:' },
+
+  // PWA / App Installation
+  'pwa.install_btn': { latn: 'Ilovani o‘rnatish', cyrl: 'Иловани ўрнатиш' },
+  'pwa.title': { latn: 'Ilovani ekranga o‘rnatish', cyrl: 'Иловани экранга ўрнатиш' },
+  'pwa.sub': {
+    latn: 'Android, iPhone yoki Windows Monoblok ekraniga alohida dastur qilib o‘rnatish',
+    cyrl: 'Android, iPhone ёки Windows Моноблок экранига алоҳида дастур қилиб ўрнатиш',
+  },
+  'pwa.standalone_active': {
+    latn: 'Ilova to‘liq ekran rejimida o‘rnatilgan!',
+    cyrl: 'Илова тўлиқ экран режимида ўрнатилган!',
+  },
 };
 
 /**
