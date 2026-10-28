@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Coffee,
   Delete,
   CheckCircle2,
   ShieldCheck,
@@ -46,8 +45,8 @@ export function LoginPage() {
         } else {
           setError(
             lang === 'cyrl'
-              ? 'PIN-код нотўғри! (Демо PIN: 1234)'
-              : 'PIN-kod noto‘g‘ri! (Demo PIN: 1234)'
+              ? 'PIN-код нотўғри!'
+              : 'PIN-kod noto‘g‘ri!'
           );
           setShake(true);
           setTimeout(() => setShake(false), 500);
@@ -108,111 +107,140 @@ export function LoginPage() {
     handleVerifyPin('1234');
   };
 
+  // iOS dialer keypad mapping
+  const keypadData = [
+    { num: '1', letters: '' },
+    { num: '2', letters: 'ABC' },
+    { num: '3', letters: 'DEF' },
+    { num: '4', letters: 'GHI' },
+    { num: '5', letters: 'JKL' },
+    { num: '6', letters: 'MNO' },
+    { num: '7', letters: 'PQRS' },
+    { num: '8', letters: 'TUV' },
+    { num: '9', letters: 'WXYZ' },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col justify-center items-center p-4 selection:bg-emerald-500 selection:text-white relative transition-colors duration-150">
-      {/* Top right Theme & Language toggles */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <button
-          onClick={toggleLang}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-emerald-500 shadow-xs transition-colors cursor-pointer"
-        >
-          <Languages className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>{lang === 'latn' ? 'Lotin' : 'Кирилл'}</span>
-        </button>
+    <div className="min-h-[100dvh] w-full bg-slate-900 text-slate-100 flex flex-col justify-between items-center px-4 py-4 sm:py-6 selection:bg-emerald-500 selection:text-white relative overflow-hidden font-sans">
+      {/* Background Soft Glow Effect */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+      {/* Top Bar: Language & Theme Switchers */}
+      <div className="w-full max-w-sm flex items-center justify-between z-10 pt-[env(safe-area-inset-top)]">
+        <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md p-1 rounded-full border border-white/10">
+          <button
+            type="button"
+            onClick={toggleLang}
+            className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold text-white/90 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <Languages className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{lang === 'latn' ? 'Lotin' : 'Ўзбек'}</span>
+          </button>
+        </div>
 
         <button
+          type="button"
           onClick={toggleTheme}
-          className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-emerald-500 shadow-xs transition-colors cursor-pointer"
-          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-white transition-colors cursor-pointer"
+          title={theme === 'dark' ? 'Kunduzgi rejim' : 'Tungi rejim'}
         >
           {theme === 'dark' ? (
             <Sun className="w-4 h-4 text-amber-400" />
           ) : (
-            <Moon className="w-4 h-4 text-slate-600" />
+            <Moon className="w-4 h-4 text-slate-300" />
           )}
         </button>
       </div>
 
-      {/* Brand Header */}
-      <div className="text-center mb-6">
-        <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-xl shadow-emerald-600/25 mb-3.5">
-          <Coffee className="w-8 h-8" />
+      {/* Main Lockscreen Container */}
+      <div className="w-full max-w-xs flex flex-col items-center my-auto z-10">
+        {/* Brand App Icon & Title */}
+        <div className="flex flex-col items-center mb-6 text-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[22%] bg-gradient-to-br from-emerald-500 to-emerald-700 p-0.5 shadow-2xl shadow-emerald-500/30 ring-1 ring-white/20 mb-3 flex items-center justify-center">
+            <img
+              src="/icon.svg"
+              alt="Choyxona POS"
+              className="w-full h-full rounded-[20%] object-cover"
+            />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            {t('login.title')}
+          </h1>
+          <p className="text-xs text-white/60 mt-0.5">
+            {lang === 'cyrl' ? '4 хонали PIN-кодни теринг' : '4 xonali PIN-kodni tering'}
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-          {t('login.title')}
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-          {t('login.subtitle')}
-        </p>
-      </div>
 
-      {/* Terminal Card */}
-      <div
-        className={`w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 shadow-2xl shadow-slate-200/60 dark:shadow-none transition-transform ${
-          shake ? 'animate-shake' : ''
-        }`}
-      >
-        {/* PIN Dots Display */}
-        <div className="flex flex-col items-center justify-center mb-7">
-          <div className="flex items-center gap-4 py-2">
+        {/* 4 Apple Passcode Dots */}
+        <div
+          className={`flex flex-col items-center mb-8 ${
+            shake ? 'animate-shake' : ''
+          }`}
+        >
+          <div className="flex items-center gap-5 py-2">
             {[0, 1, 2, 3].map((idx) => {
               const isFilled = pin.length > idx;
               return (
                 <div
                   key={idx}
-                  className={`w-4 h-4 rounded-full transition-all duration-200 ${
+                  className={`w-3.5 h-3.5 rounded-full transition-all duration-150 ${
                     error
-                      ? 'bg-rose-500 ring-4 ring-rose-100 dark:ring-rose-950 scale-110'
+                      ? 'bg-rose-500 border border-rose-400 scale-110 shadow-sm shadow-rose-500'
                       : isFilled
-                      ? 'bg-emerald-600 ring-4 ring-emerald-100 dark:ring-emerald-950 scale-110'
-                      : 'bg-slate-200 dark:bg-slate-700 ring-2 ring-transparent'
+                      ? 'bg-emerald-400 border border-emerald-300 scale-125 shadow-md shadow-emerald-500/50'
+                      : 'border-2 border-white/40 bg-transparent'
                   }`}
                 />
               );
             })}
           </div>
 
-          {/* Status / Error Message */}
-          <div className="h-6 mt-2 flex items-center justify-center">
+          {/* Status / Error Text */}
+          <div className="h-5 mt-1 flex items-center justify-center">
             {loading ? (
-              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <p className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 {t('login.verifying')}
               </p>
             ) : error ? (
-              <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+              <p className="text-xs font-semibold text-rose-400 flex items-center gap-1">
                 <AlertCircle className="w-3.5 h-3.5" />
-                {error}
+                <span>{error}</span>
               </p>
-            ) : (
-              <p className="text-xs text-slate-400 dark:text-slate-500">{t('login.enter_pin')}</p>
-            )}
+            ) : null}
           </div>
         </div>
 
-        {/* 3x4 Numeric Keypad */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-3.5 max-w-[280px] mx-auto">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        {/* iOS Circular Numeric Keypad (3x3 + 1 row) */}
+        <div className="grid grid-cols-3 justify-items-center items-center gap-y-3.5 gap-x-5 w-full max-w-[280px] mx-auto select-none">
+          {keypadData.map(({ num, letters }) => (
             <button
               key={num}
               type="button"
-              onClick={() => handleAddDigit(String(num))}
+              onClick={() => handleAddDigit(num)}
               disabled={loading || pin.length >= 4}
-              className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-emerald-50 dark:active:bg-emerald-950/40 active:text-emerald-700 dark:active:text-emerald-400 active:scale-95 text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 transition-all border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center cursor-pointer select-none"
+              className="w-[72px] h-[72px] min-w-[72px] min-h-[72px] sm:w-[76px] sm:h-[76px] sm:min-w-[76px] sm:min-h-[76px] aspect-square rounded-full bg-white/[0.08] hover:bg-white/[0.16] active:bg-white/30 active:scale-95 text-white backdrop-blur-lg border border-white/10 flex flex-col items-center justify-center transition-all duration-75 cursor-pointer outline-none focus:ring-2 focus:ring-emerald-500/50"
             >
-              {num}
+              <span className="text-2xl sm:text-3xl font-medium leading-none">
+                {num}
+              </span>
+              {letters && (
+                <span className="text-[9px] font-bold tracking-widest text-white/40 mt-1 leading-none">
+                  {letters}
+                </span>
+              )}
             </button>
           ))}
 
+          {/* Bottom Row: Clear | 0 | Backspace */}
           {/* Clear Button */}
           <button
             type="button"
             onClick={handleClearPin}
             disabled={loading || pin.length === 0}
-            className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 dark:hover:text-rose-400 active:scale-95 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 transition-all border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center cursor-pointer select-none disabled:opacity-40"
-            title={t('login.clear')}
+            className="w-[72px] h-[72px] min-w-[72px] min-h-[72px] sm:w-[76px] sm:h-[76px] sm:min-w-[76px] sm:min-h-[76px] aspect-square rounded-full flex items-center justify-center text-xs font-bold text-white/70 hover:text-white active:scale-95 transition-all duration-75 cursor-pointer disabled:opacity-0"
           >
-            {t('login.clear')}
+            {lang === 'cyrl' ? 'Тозалаш' : 'Tozalash'}
           </button>
 
           {/* 0 Button */}
@@ -220,51 +248,54 @@ export function LoginPage() {
             type="button"
             onClick={() => handleAddDigit('0')}
             disabled={loading || pin.length >= 4}
-            className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-emerald-50 dark:active:bg-emerald-950/40 active:text-emerald-700 dark:active:text-emerald-400 active:scale-95 text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 transition-all border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center cursor-pointer select-none"
+            className="w-[72px] h-[72px] min-w-[72px] min-h-[72px] sm:w-[76px] sm:h-[76px] sm:min-w-[76px] sm:min-h-[76px] aspect-square rounded-full bg-white/[0.08] hover:bg-white/[0.16] active:bg-white/30 active:scale-95 text-white backdrop-blur-lg border border-white/10 flex flex-col items-center justify-center transition-all duration-75 cursor-pointer outline-none focus:ring-2 focus:ring-emerald-500/50"
           >
-            0
+            <span className="text-2xl sm:text-3xl font-medium leading-none">
+              0
+            </span>
           </button>
 
-          {/* Backspace Button */}
+          {/* Delete Button */}
           <button
             type="button"
             onClick={handleDeleteDigit}
             disabled={loading || pin.length === 0}
-            className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 text-slate-700 dark:text-slate-300 transition-all border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center justify-center cursor-pointer select-none disabled:opacity-40"
+            className="w-[72px] h-[72px] min-w-[72px] min-h-[72px] sm:w-[76px] sm:h-[76px] sm:min-w-[76px] sm:min-h-[76px] aspect-square rounded-full flex items-center justify-center text-white/70 hover:text-white active:scale-90 transition-all duration-75 cursor-pointer disabled:opacity-0"
             title={t('login.delete')}
           >
-            <Delete className="w-5 h-5 sm:w-6 sm:h-6" />
+            <Delete className="w-6 h-6 stroke-[1.8]" />
           </button>
         </div>
+      </div>
 
-        {/* Demo Fast Access Hint & PWA Install */}
-        <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-2">
+      {/* Bottom Actions & PWA Install */}
+      <div className="w-full max-w-xs flex flex-col items-center gap-2 z-10 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="flex items-center gap-2 w-full justify-center">
           <button
             type="button"
             onClick={handleQuickDemo}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold transition-colors cursor-pointer border border-emerald-200/60 dark:border-emerald-800/60"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-semibold backdrop-blur-md border border-emerald-500/30 transition-all active:scale-95 cursor-pointer"
           >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>
-              {t('login.quick_demo')} <strong>1234</strong> {t('login.fill')}
+              {t('login.quick_demo')} <strong>1234</strong>
             </span>
           </button>
 
           <button
             type="button"
             onClick={() => setIsInstallModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer border border-slate-200 dark:border-slate-700"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80 text-xs font-semibold backdrop-blur-md border border-white/10 transition-all active:scale-95 cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
             <span>{t('pwa.install_btn')}</span>
           </button>
         </div>
-      </div>
 
-      {/* Footer Info */}
-      <div className="mt-6 text-center text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1.5 justify-center">
-        <ShieldCheck className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-        <span>{t('login.secure')}</span>
+        <p className="text-[11px] text-white/40 flex items-center gap-1 mt-1">
+          <ShieldCheck className="w-3.5 h-3.5 text-white/40" />
+          <span>{t('login.secure')}</span>
+        </p>
       </div>
 
       {/* PWA Install Modal */}

@@ -22,6 +22,10 @@ export default {
           950: '#022c22',
         }
       },
+      spacing: {
+        '18': '4.5rem',
+        '19': '4.75rem',
+      },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       }

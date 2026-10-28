@@ -35,24 +35,24 @@ export function StatCard({
   const style = colorStyles[color] || colorStyles.emerald;
 
   return (
-    <div className={`bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow transition-all duration-200 ${className}`}>
+    <div className={`bg-white dark:bg-slate-900 rounded-2xl p-3.5 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow transition-all duration-200 ${className}`}>
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{title}</span>
+        <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 line-clamp-1">{title}</span>
         {Icon && (
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${style.iconBg}`}>
-            <Icon className="w-5 h-5" />
+          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${style.iconBg}`}>
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         )}
       </div>
-      <div className="mt-3 flex items-baseline justify-between">
-        <p className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{value}</p>
+      <div className="mt-2 sm:mt-3 flex items-baseline justify-between">
+        <p className="text-base sm:text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100 truncate">{value}</p>
         {trend && (
-          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200/50 dark:border-emerald-800/50">
+          <span className="text-[10px] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-200/50 dark:border-emerald-800/50">
             {trend}
           </span>
         )}
       </div>
-      {subvalue && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{subvalue}</p>}
+      {subvalue && <p className="mt-1 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{subvalue}</p>}
     </div>
   );
 }

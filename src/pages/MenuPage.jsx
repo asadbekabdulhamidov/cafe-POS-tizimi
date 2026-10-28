@@ -169,7 +169,88 @@ export function MenuPage() {
         />
       ) : (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden transition-colors duration-150">
-          <div className="overflow-x-auto">
+          {/* Mobile Card-List View (iOS style) */}
+          <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 p-2 sm:p-4">
+            {filteredMenu.map((item) => (
+              <div
+                key={item.id}
+                className="py-3 px-2 flex flex-col gap-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                        {localize(item.name)}
+                      </h4>
+                      <Badge variant="default" size="sm">
+                        {localize(item.category)}
+                      </Badge>
+                      {item.unit === 'kg' && (
+                        <span className="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-extrabold text-[9px] uppercase">
+                          KG
+                        </span>
+                      )}
+                    </div>
+                    {item.description && (
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">
+                        {localize(item.description)}
+                      </p>
+                    )}
+                  </div>
+
+                  <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100 shrink-0">
+                    {formatCurrency(item.price, true, lang)}
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal ml-0.5">
+                      /{item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
+                    </span>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => toggleItemAvailability(item.id)}
+                    className="cursor-pointer"
+                    title={lang === 'cyrl' ? 'Ҳолатни ўзгартириш' : 'Holatni o‘zgartirish'}
+                  >
+                    <Badge
+                      variant={item.isAvailable ? 'success' : 'danger'}
+                      size="sm"
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          item.isAvailable ? 'bg-emerald-500' : 'bg-rose-500'
+                        }`}
+                      />
+                      {item.isAvailable ? t('menu.available') : t('menu.unavailable')}
+                    </Badge>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEdit(item)}
+                      className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                      title={t('menu.edit')}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteItem(item)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                      title={t('menu.delete')}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 text-xs font-semibold uppercase tracking-wider">

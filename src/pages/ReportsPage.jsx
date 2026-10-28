@@ -89,7 +89,7 @@ export function ReportsPage() {
   return (
     <div className="space-y-6">
       {/* Top Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title={t('reports.total_rev')}
           value={formatCurrency(totalRevenue, true, lang)}
@@ -286,7 +286,7 @@ export function ReportsPage() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Orders List / Table */}
         {filteredOrders.length === 0 ? (
           <EmptyState
             icon={Receipt}
@@ -294,65 +294,116 @@ export function ReportsPage() {
             description={lang === 'cyrl' ? 'Танланган филтрларга мос келувчи ҳисоб мавжуд эмас.' : 'Tanlangan filtrlarga mos keluvchi hisob mavjud emas.'}
           />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 text-xs font-semibold uppercase tracking-wider">
-                  <th className="py-3 px-4">{t('reports.col_date')}</th>
-                  <th className="py-3 px-4">{t('reports.col_room')}</th>
-                  <th className="py-3 px-4">{t('reports.col_items')}</th>
-                  <th className="py-3 px-4">{t('reports.col_pay_type')}</th>
-                  <th className="py-3 px-4">{t('reports.col_final')}</th>
-                  <th className="py-3 px-4 text-right">{t('reports.col_receipt')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs sm:text-sm">
-                {filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
-                    onClick={() => setSelectedReceipt(order)}
-                  >
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 whitespace-nowrap text-xs">
-                      {formatDateTime(order.closedAt || order.createdAt)}
-                    </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                      {localize(order.roomName)}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 max-w-xs truncate text-xs">
-                      {(order.items || [])
-                        .map((i) => `${localize(i.name)} (${formatQuantity(i.quantity, i.unit, lang)})`)
-                        .join(', ')}
-                    </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+          <>
+            {/* Mobile Cards View (iOS style) */}
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+              {filteredOrders.map((order) => (
+                <div
+                  key={order.id}
+                  onClick={() => setSelectedReceipt(order)}
+                  className="py-3.5 flex items-center justify-between gap-3 active:bg-slate-50 dark:active:bg-slate-800/60 transition-colors cursor-pointer"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 truncate">
+                        {localize(order.roomName)}
+                      </h4>
                       <Badge
                         variant={order.paymentMethod === 'karta' ? 'purple' : 'success'}
                         size="sm"
                       >
                         {order.paymentMethod === 'karta' ? t('payment.card') : t('payment.cash')}
                       </Badge>
-                    </td>
-                    <td className="py-3.5 px-4 font-extrabold text-emerald-800 dark:text-emerald-400 whitespace-nowrap">
+                    </div>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                      {formatDateTime(order.closedAt || order.createdAt)}
+                    </p>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1 mt-0.5">
+                      {(order.items || []).map((i) => localize(i.name)).join(', ')}
+                    </p>
+                  </div>
+
+                  <div className="text-right shrink-0 flex items-center gap-2">
+                    <span className="font-black text-sm text-emerald-800 dark:text-emerald-400">
                       {formatCurrency(order.finalTotal, true, lang)}
-                    </td>
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedReceipt(order);
-                        }}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>{t('reports.view')}</span>
-                      </button>
-                    </td>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedReceipt(order);
+                      }}
+                      className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 active:scale-95 transition-all"
+                      title={t('reports.view')}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 text-xs font-semibold uppercase tracking-wider">
+                    <th className="py-3 px-4">{t('reports.col_date')}</th>
+                    <th className="py-3 px-4">{t('reports.col_room')}</th>
+                    <th className="py-3 px-4">{t('reports.col_items')}</th>
+                    <th className="py-3 px-4">{t('reports.col_pay_type')}</th>
+                    <th className="py-3 px-4">{t('reports.col_final')}</th>
+                    <th className="py-3 px-4 text-right">{t('reports.col_receipt')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-xs sm:text-sm">
+                  {filteredOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="hover:bg-slate-50/70 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
+                      onClick={() => setSelectedReceipt(order)}
+                    >
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-400 whitespace-nowrap text-xs">
+                        {formatDateTime(order.closedAt || order.createdAt)}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                        {localize(order.roomName)}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 max-w-xs truncate text-xs">
+                        {(order.items || [])
+                          .map((i) => `${localize(i.name)} (${formatQuantity(i.quantity, i.unit, lang)})`)
+                          .join(', ')}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <Badge
+                          variant={order.paymentMethod === 'karta' ? 'purple' : 'success'}
+                          size="sm"
+                        >
+                          {order.paymentMethod === 'karta' ? t('payment.card') : t('payment.cash')}
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 px-4 font-extrabold text-emerald-800 dark:text-emerald-400 whitespace-nowrap">
+                        {formatCurrency(order.finalTotal, true, lang)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedReceipt(order);
+                          }}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:text-emerald-900 dark:hover:text-emerald-200 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{t('reports.view')}</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

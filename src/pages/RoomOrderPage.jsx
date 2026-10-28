@@ -16,6 +16,7 @@ import {
   ArrowRightLeft,
   Printer,
   Scale,
+  ArrowRight,
 } from 'lucide-react';
 import { usePOSStore } from '../store/usePOSStore';
 import { useAppConfigStore } from '../store/useAppConfigStore';
@@ -901,6 +902,28 @@ export function RoomOrderPage() {
           </div>
         </div>
       </div>
+
+      {/* Floating Mobile Cart & Checkout Pill for iPhone */}
+      {mobileTab === 'menu' && workingItems.length > 0 && (
+        <div className="fixed bottom-18 left-3.5 right-3.5 lg:hidden z-30 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <button
+            type="button"
+            onClick={() => setMobileTab('cart')}
+            className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white px-4 py-3 rounded-2xl shadow-xl shadow-emerald-950/20 border border-emerald-500/40 flex items-center justify-between backdrop-blur-md transition-all cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="w-6 h-6 rounded-full bg-white/20 text-white font-extrabold text-xs flex items-center justify-center">
+                {workingItems.reduce((s, i) => s + i.quantity, 0)}
+              </span>
+              <span className="text-xs font-bold">{t('order.cart_tab')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black tracking-tight">{formatCurrency(finalTotal, true, lang)}</span>
+              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Payment Checkout Modal */}
       <PaymentModal

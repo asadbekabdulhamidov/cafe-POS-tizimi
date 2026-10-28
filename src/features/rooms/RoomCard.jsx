@@ -76,10 +76,10 @@ export function RoomCard({ room, activeOrder, onEdit, onDelete }) {
   return (
     <div
       onClick={handleOpenRoom}
-      className={`rounded-2xl border transition-all duration-200 cursor-pointer p-4 sm:p-5 flex flex-col justify-between group relative ${
+      className={`rounded-2xl border transition-all duration-200 cursor-pointer p-4 sm:p-5 flex flex-col justify-between group relative active:scale-[0.99] select-none ${
         isOccupied
-          ? 'bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-800/70 shadow-sm hover:shadow-md hover:border-amber-400 dark:hover:border-amber-600 ring-1 ring-amber-200/50 dark:ring-amber-900/40'
-          : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-600/70 hover:ring-1 hover:ring-emerald-200/60 dark:hover:ring-emerald-900/40'
+          ? 'bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-800/70 shadow-xs hover:shadow-md hover:border-amber-400 dark:hover:border-amber-600 ring-1 ring-amber-200/50 dark:ring-amber-900/40'
+          : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-600/70 hover:ring-1 hover:ring-emerald-200/60 dark:hover:ring-emerald-900/40'
       }`}
     >
       {/* Top Header */}
@@ -87,7 +87,7 @@ export function RoomCard({ room, activeOrder, onEdit, onDelete }) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-base transition-colors ${currentConfig.iconBg}`}
+              className={`w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-base transition-colors ${currentConfig.iconBg}`}
             >
               <TypeIcon className="w-5 h-5" />
             </div>
@@ -117,8 +117,8 @@ export function RoomCard({ room, activeOrder, onEdit, onDelete }) {
               {isOccupied ? t('places.band') : t('places.bosh')}
             </Badge>
 
-            {/* Edit / Delete quick controls */}
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 ml-1">
+            {/* Edit / Delete quick controls (visible on mobile, hover on desktop) */}
+            <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex items-center gap-1 ml-1">
               {onEdit && (
                 <button
                   type="button"
