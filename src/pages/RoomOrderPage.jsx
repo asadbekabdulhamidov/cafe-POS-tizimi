@@ -13,6 +13,8 @@ import {
   ShoppingBag,
   X,
   DoorOpen,
+  ArrowRightLeft,
+  Printer,
 } from 'lucide-react';
 import { usePOSStore } from '../store/usePOSStore';
 import { useAppConfigStore } from '../store/useAppConfigStore';
@@ -22,6 +24,7 @@ import { Badge } from '../components/ui/Badge';
 import { EmptyState } from '../components/ui/EmptyState';
 import { PaymentModal } from '../features/orders/PaymentModal';
 import { ReceiptModal } from '../features/orders/ReceiptModal';
+import { TransferModal } from '../features/orders/TransferModal';
 import { formatCurrency, formatTime, generateId } from '../utils/formatters';
 import { INITIAL_CATEGORIES } from '../data/initialData';
 import { toast } from 'sonner';
@@ -37,6 +40,7 @@ export function RoomOrderPage() {
     startOrderForRoom,
     saveOrder,
     closeBill,
+    transferOrder,
     isProcessingPayment,
   } = usePOSStore();
 
@@ -54,6 +58,8 @@ export function RoomOrderPage() {
 
   // Modals state
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isPreCheckModalOpen, setIsPreCheckModalOpen] = useState(false);
   const [closedReceipt, setClosedReceipt] = useState(null);
 
   // Mobile active tab: 'menu' | 'cart'
@@ -253,7 +259,12 @@ export function RoomOrderPage() {
   };
 
   // Confirm and close bill
-  const handleConfirmPayment = async ({ paymentMethod, discountAmount }) => {
+  const handleConfirmPayment = async ({
+    paymentMethod,
+    discountAmount,
+    cashGiven,
+    change,
+  }) => {
     let active = currentOrder;
     if (!active) {
       active = startOrderForRoom(room.id);
@@ -273,6 +284,8 @@ export function RoomOrderPage() {
     const res = await closeBill(room.id, {
       paymentMethod,
       discountAmount: discountAmount ?? workingDiscount,
+      cashGiven,
+      change,
       closedBy: 'admin',
     });
 
@@ -287,6 +300,41 @@ export function RoomOrderPage() {
     } else {
       toast.error(res.message || 'Xatolik yuz berdi');
     }
+  };
+
+  // Transfer order to another empty place
+  const handleConfirmTransfer = (fromId, toId) => {
+    if (isDirty) {
+      handleSaveOrder();
+    }
+    const res = transferOrder(fromId, toId);
+    if (res.success) {
+      setIsTransferModalOpen(false);
+      toast.success(
+        lang === 'cyrl'
+          ? `Буюртма ${localize(res.toRoom.name)}га муваффақиятли кўчирилди!`
+          : `Buyurtma ${res.toRoom.name}ga muvaffaqiyatli ko‘chirildi!`
+      );
+      navigate(`/rooms/${toId}`);
+    } else {
+      toast.error(res.message || 'Xatolik yuz berdi');
+    }
+  };
+
+  // Open pre-check bill
+  const handleOpenPreCheck = () => {
+    if (workingItems.length === 0) {
+      toast.error(
+        lang === 'cyrl'
+          ? 'Пре-чек чиқариш учун аввал буюртмага маҳсулот қўшинг!'
+          : 'Pre-chek chiqarish uchun avval buyurtmaga mahsulot qo‘shing!'
+      );
+      return;
+    }
+    if (isDirty) {
+      handleSaveOrder();
+    }
+    setIsPreCheckModalOpen(true);
   };
 
   const isOccupied = room.status === 'band';
@@ -328,17 +376,39 @@ export function RoomOrderPage() {
         </div>
 
         {/* Right action button shortcuts */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center flex-wrap gap-2">
           {workingItems.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              icon={Save}
-              onClick={handleSaveOrder}
-              disabled={!isDirty}
-            >
-              {t('btn.save')}
-            </Button>
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Printer}
+                onClick={handleOpenPreCheck}
+                title={t('precheck.title')}
+              >
+                <span className="hidden sm:inline">{t('precheck.btn')}</span>
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={ArrowRightLeft}
+                onClick={() => setIsTransferModalOpen(true)}
+                title={t('transfer.title')}
+              >
+                <span className="hidden sm:inline">{t('transfer.btn')}</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Save}
+                onClick={handleSaveOrder}
+                disabled={!isDirty}
+              >
+                {t('btn.save')}
+              </Button>
+            </>
           )}
 
           <Button
@@ -684,29 +754,57 @@ export function RoomOrderPage() {
                 </span>
               </div>
 
-              {/* Buttons */}
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Button
-                  variant="secondary"
-                  size="md"
-                  icon={Save}
-                  onClick={handleSaveOrder}
-                  disabled={workingItems.length === 0 || !isDirty}
-                  className="w-full justify-center"
-                >
-                  {t('order.save_order')}
-                </Button>
+              {/* Action Buttons: 2 rows */}
+              <div className="space-y-2 pt-2">
+                {/* Secondary utility row */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={Printer}
+                    onClick={handleOpenPreCheck}
+                    disabled={workingItems.length === 0}
+                    className="w-full justify-center text-xs"
+                  >
+                    {t('precheck.btn')}
+                  </Button>
 
-                <Button
-                  variant="primary"
-                  size="md"
-                  icon={Receipt}
-                  onClick={() => setIsPaymentModalOpen(true)}
-                  disabled={workingItems.length === 0}
-                  className="w-full justify-center shadow-md shadow-emerald-600/20"
-                >
-                  {t('order.close_bill')}
-                </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    icon={ArrowRightLeft}
+                    onClick={() => setIsTransferModalOpen(true)}
+                    disabled={workingItems.length === 0}
+                    className="w-full justify-center text-xs"
+                  >
+                    {t('transfer.btn')}
+                  </Button>
+                </div>
+
+                {/* Primary main row */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="md"
+                    icon={Save}
+                    onClick={handleSaveOrder}
+                    disabled={workingItems.length === 0 || !isDirty}
+                    className="w-full justify-center font-bold"
+                  >
+                    {t('order.save_order')}
+                  </Button>
+
+                  <Button
+                    variant="primary"
+                    size="md"
+                    icon={Receipt}
+                    onClick={() => setIsPaymentModalOpen(true)}
+                    disabled={workingItems.length === 0}
+                    className="w-full justify-center font-bold shadow-md shadow-emerald-600/20"
+                  >
+                    {t('order.close_bill')}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -729,7 +827,38 @@ export function RoomOrderPage() {
         isProcessing={isProcessingPayment}
       />
 
-      {/* Receipt Modal */}
+      {/* Transfer Place Modal */}
+      <TransferModal
+        isOpen={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        currentRoom={room}
+        order={{
+          id: currentOrder?.id || generateId('ord'),
+          items: workingItems,
+          subtotal,
+          discountAmount: workingDiscount,
+          finalTotal,
+        }}
+        onConfirmTransfer={handleConfirmTransfer}
+      />
+
+      {/* Pre-Check Modal (Oraliq hisob-kitob varaqasi) */}
+      <ReceiptModal
+        isOpen={isPreCheckModalOpen}
+        onClose={() => setIsPreCheckModalOpen(false)}
+        isPreCheck={true}
+        order={{
+          id: currentOrder?.id || generateId('ord'),
+          roomName: room.name,
+          items: workingItems,
+          subtotal,
+          discountAmount: workingDiscount,
+          finalTotal,
+          createdAt: currentOrder?.createdAt || new Date().toISOString(),
+        }}
+      />
+
+      {/* Final Closed Receipt Modal */}
       <ReceiptModal
         isOpen={!!closedReceipt}
         onClose={() => {

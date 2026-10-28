@@ -230,6 +230,38 @@ export const DICTIONARY = {
   'btn.add': { latn: 'Qo‘shish', cyrl: 'Қўшиш' },
   'btn.delete': { latn: 'O‘chirish', cyrl: 'Ўчириш' },
   'btn.edit': { latn: 'Tahrirlash', cyrl: 'Таҳрирлаш' },
+
+  // Transfer Place (Joyni ko'chirish)
+  'transfer.btn': { latn: 'Joyni ko‘chirish', cyrl: 'Жойни кўчириш' },
+  'transfer.title': { latn: 'Joyni ko‘chirish (Stol / Xona almashtirish)', cyrl: 'Жойни кўчириш (Стол / Хона алмаштириш)' },
+  'transfer.sub': {
+    latn: 'Joriy buyurtmani boshqa bo‘sh xona, stol yoki so‘riga o‘tkazish',
+    cyrl: 'Жорий буюртмани бошқа бўш хона, стол ёки сўрига ўтказиш',
+  },
+  'transfer.current': { latn: 'Hozirgi joy', cyrl: 'Ҳозирги жой' },
+  'transfer.target': { latn: 'Ko‘chiriladigan joyni tanlang', cyrl: 'Кўчириладиган жойни танланг' },
+  'transfer.confirm': { latn: 'Ko‘chirishni tasdiqlash', cyrl: 'Кўчиришни тасдиқлаш' },
+  'transfer.no_empty': { latn: 'Barcha joylar band, bo‘sh joy topilmadi!', cyrl: 'Барча жойлар банд, бўш жой топилмади!' },
+  'transfer.success': { latn: 'Buyurtma muvaffaqiyatli ko‘chirildi!', cyrl: 'Буюртма муваффақиятли кўчирилди!' },
+
+  // Pre-check
+  'precheck.btn': { latn: 'Pre-chek (Hisob)', cyrl: 'Пре-чек (Ҳисоб)' },
+  'precheck.title': { latn: 'Oraliq hisob varaqasi (Pre-chek)', cyrl: 'Оралиқ ҳисоб варақаси (Пре-чек)' },
+  'precheck.sub': { latn: 'To‘lovdan oldingi hisob-kitob varaqasi', cyrl: 'Тўловдан олдинги ҳисоб-китоб варақаси' },
+  'precheck.banner': { latn: '*** ORALIQ HISOB VARAQASI (PRE-CHEK) ***', cyrl: '*** ОРАЛИҚ ҲИСОБ ВАРАҚАСИ (ПРЕ-ЧЕК) ***' },
+  'precheck.note': {
+    latn: 'Diqqat: Ushbu chek to‘lov hujjati emas, mijoz bilan oraliq hisob-kitob qilish uchundir.',
+    cyrl: 'Диққат: Ушбу чек тўлов ҳужжати эмас, мижоз билан оралиқ ҳисоб-китоб қилиш учундир.',
+  },
+
+  // Payment Cash & Change
+  'payment.received_amount': { latn: 'Mijoz bergan summa', cyrl: 'Мижоз берган сумма' },
+  'payment.change_amount': { latn: 'Qaytim (Сдача)', cyrl: 'Қайтим (Сдача)' },
+  'payment.exact_amount': { latn: 'Aniq summa', cyrl: 'Аниқ сумма' },
+  'payment.short_by': { latn: 'Yetmayapti:', cyrl: 'Етмаяпти:' },
+  'payment.quick_bills': { latn: 'Tezkor naqd kupyuralar:', cyrl: 'Тезкор нақд купюралар:' },
+  'receipt.given': { latn: 'Mijoz berdi:', cyrl: 'Мижоз берди:' },
+  'receipt.change': { latn: 'Qaytim:', cyrl: 'Қайтим:' },
 };
 
 /**

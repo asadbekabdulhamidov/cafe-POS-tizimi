@@ -1,12 +1,12 @@
 import React from 'react';
-import { Printer } from 'lucide-react';
+import { Printer, FileText } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { formatCurrency, formatDateTime } from '../../utils/formatters';
 import { usePOSStore } from '../../store/usePOSStore';
 import { useAppConfigStore } from '../../store/useAppConfigStore';
 
-export function ReceiptModal({ isOpen, onClose, order }) {
+export function ReceiptModal({ isOpen, onClose, order, isPreCheck = false }) {
   const { settings } = usePOSStore();
   const { t, localize, lang } = useAppConfigStore();
 
@@ -16,12 +16,14 @@ export function ReceiptModal({ isOpen, onClose, order }) {
     window.print();
   };
 
+  const finalSum = order.finalTotal ?? (order.subtotal || 0) - (order.discountAmount || 0);
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t('receipt.title')}
-      subtitle={t('receipt.sub')}
+      title={isPreCheck ? t('precheck.title') : t('receipt.title')}
+      subtitle={isPreCheck ? t('precheck.sub') : t('receipt.sub')}
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
@@ -30,6 +32,13 @@ export function ReceiptModal({ isOpen, onClose, order }) {
           id="pos-receipt"
           className="bg-white p-5 rounded-xl border border-slate-200/90 shadow-xs font-mono text-xs text-slate-800 space-y-3"
         >
+          {/* Precheck Banner if active */}
+          {isPreCheck && (
+            <div className="p-2 rounded-lg bg-amber-50 border border-dashed border-amber-300 text-center text-amber-800 font-sans font-bold text-xs">
+              {t('precheck.banner')}
+            </div>
+          )}
+
           {/* Header */}
           <div className="text-center pb-3 border-b border-dashed border-slate-300">
             <h4 className="font-bold text-base font-sans tracking-tight text-slate-900">
@@ -58,18 +67,28 @@ export function ReceiptModal({ isOpen, onClose, order }) {
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">{t('receipt.datetime')}</span>
-              <span>{formatDateTime(order.closedAt || order.createdAt)}</span>
+              <span>{formatDateTime(order.closedAt || order.createdAt || new Date().toISOString())}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">{t('receipt.cashier')}</span>
-              <span>{localize(order.closedBy) || 'admin'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">{t('receipt.payment_type')}</span>
-              <span className="font-bold uppercase">
-                {order.paymentMethod === 'karta' ? t('payment.card') : t('payment.cash')}
-              </span>
-            </div>
+            {!isPreCheck && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">{t('receipt.cashier')}</span>
+                  <span>{localize(order.closedBy) || 'admin'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">{t('receipt.payment_type')}</span>
+                  <span className="font-bold uppercase">
+                    {order.paymentMethod === 'karta' ? t('payment.card') : t('payment.cash')}
+                  </span>
+                </div>
+              </>
+            )}
+            {isPreCheck && (
+              <div className="flex justify-between text-amber-700 font-bold">
+                <span>{lang === 'cyrl' ? 'Ҳолат:' : 'Holat:'}</span>
+                <span>{lang === 'cyrl' ? 'Тўланмаган (Оралиқ)' : 'To‘lanmagan (Oraliq)'}</span>
+              </div>
+            )}
           </div>
 
           {/* Items list */}
@@ -99,7 +118,7 @@ export function ReceiptModal({ isOpen, onClose, order }) {
           <div className="py-2 space-y-1 text-xs">
             <div className="flex justify-between">
               <span className="text-slate-500">{t('order.subtotal')}</span>
-              <span>{formatCurrency(order.subtotal || order.finalTotal, true, lang)}</span>
+              <span>{formatCurrency(order.subtotal ?? finalSum, true, lang)}</span>
             </div>
             {order.discountAmount > 0 && (
               <div className="flex justify-between text-emerald-700">
@@ -108,18 +127,40 @@ export function ReceiptModal({ isOpen, onClose, order }) {
               </div>
             )}
             <div className="flex justify-between text-sm font-bold pt-1.5 border-t border-slate-300">
-              <span>{lang === 'cyrl' ? 'ЖАМИ ТЎЛАНДИ:' : 'JAMI TO‘LANDI:'}</span>
-              <span className="text-emerald-700">{formatCurrency(order.finalTotal, true, lang)}</span>
+              <span>{isPreCheck ? (lang === 'cyrl' ? 'ЖАМИ ҲИСОБ:' : 'JAMI HISOB:') : (lang === 'cyrl' ? 'ЖАМИ ТЎЛАНДИ:' : 'JAMI TO‘LANDI:')}</span>
+              <span className="text-emerald-700">{formatCurrency(finalSum, true, lang)}</span>
             </div>
+
+            {/* If paid with cash and receivedAmount exists */}
+            {!isPreCheck && order.paymentMethod === 'naqd' && order.cashGiven > 0 && (
+              <div className="pt-1.5 border-t border-dashed border-slate-200 text-[11px] space-y-0.5">
+                <div className="flex justify-between text-slate-600">
+                  <span>{t('receipt.given')}</span>
+                  <span className="font-semibold">{formatCurrency(order.cashGiven, true, lang)}</span>
+                </div>
+                {order.change > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-bold">
+                    <span>{t('receipt.change')}</span>
+                    <span>{formatCurrency(order.change, true, lang)}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Footer */}
-          <div className="text-center pt-3 border-t border-dashed border-slate-300 text-[11px] text-slate-500 font-sans">
-            <p>{localize(settings.receiptFooter) || (lang === 'cyrl' ? 'Ташрифингиз учун раҳмат!' : 'Tashrifingiz uchun rahmat!')}</p>
-            <p className="text-[10px] text-slate-400 mt-1">
-              {t('app.name')}
-            </p>
-          </div>
+          {/* Precheck Notice or Regular Footer */}
+          {isPreCheck ? (
+            <div className="text-center pt-2 border-t border-dashed border-slate-300 text-[10px] text-slate-500 font-sans leading-tight">
+              <p>{t('precheck.note')}</p>
+            </div>
+          ) : (
+            <div className="text-center pt-3 border-t border-dashed border-slate-300 text-[11px] text-slate-500 font-sans">
+              <p>{localize(settings.receiptFooter) || (lang === 'cyrl' ? 'Ташрифингиз учун раҳмат!' : 'Tashrifingiz uchun rahmat!')}</p>
+              <p className="text-[10px] text-slate-400 mt-1">
+                {t('app.name')}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Buttons */}
@@ -133,7 +174,7 @@ export function ReceiptModal({ isOpen, onClose, order }) {
             icon={Printer}
             onClick={handlePrint}
           >
-            {t('receipt.print')}
+            {isPreCheck ? (lang === 'cyrl' ? 'Пре-чекни чиқариш' : 'Pre-chekni chiqarish') : t('receipt.print')}
           </Button>
         </div>
       </div>

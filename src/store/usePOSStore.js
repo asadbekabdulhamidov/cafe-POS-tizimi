@@ -172,7 +172,10 @@ export const usePOSStore = create((set, get) => ({
   },
 
   // Close the bill and complete payment
-  closeBill: async (roomId, { paymentMethod = 'naqd', discountAmount = 0, closedBy = 'admin' } = {}) => {
+  closeBill: async (
+    roomId,
+    { paymentMethod = 'naqd', discountAmount = 0, closedBy = 'admin', cashGiven, change } = {}
+  ) => {
     const state = get();
     if (state.isProcessingPayment) {
       return { success: false, message: 'To‘lov jarayonda...' };
@@ -215,6 +218,8 @@ export const usePOSStore = create((set, get) => ({
         subtotal,
         finalTotal,
         closedBy,
+        cashGiven: paymentMethod === 'naqd' && cashGiven !== undefined ? Number(cashGiven) : undefined,
+        change: paymentMethod === 'naqd' && change !== undefined ? Number(change) : undefined,
       };
 
       // Remove from active orders, add to closed orders
@@ -239,6 +244,53 @@ export const usePOSStore = create((set, get) => ({
       set({ isProcessingPayment: false });
       return { success: false, message: error.message || 'Xatolik yuz berdi' };
     }
+  },
+
+  // Transfer active order from one room/place to another
+  transferOrder: (fromRoomId, toRoomId) => {
+    const state = get();
+    const fromRoom = state.rooms.find((r) => r.id === fromRoomId);
+    const toRoom = state.rooms.find((r) => r.id === toRoomId);
+
+    if (!fromRoom || !toRoom) {
+      return { success: false, message: 'Joy topilmadi!' };
+    }
+
+    if (toRoom.status === 'band') {
+      return { success: false, message: 'Tanlangan joy hozirda band!' };
+    }
+
+    const activeOrder = state.getActiveOrderForRoom(fromRoomId);
+    if (!activeOrder) {
+      return { success: false, message: 'Ushbu joyda ko‘chiriladigan faol buyurtma yo‘q!' };
+    }
+
+    // Update order's roomId and roomName
+    const updatedActiveOrders = state.activeOrders.map((o) =>
+      o.id === activeOrder.id
+        ? {
+            ...o,
+            roomId: toRoom.id,
+            roomName: toRoom.name,
+            updatedAt: new Date().toISOString(),
+          }
+        : o
+    );
+
+    // Update rooms: fromRoom becomes 'bosh', toRoom becomes 'band'
+    const updatedRooms = state.rooms.map((r) => {
+      if (r.id === fromRoomId) {
+        return { ...r, status: 'bosh', activeOrderId: null };
+      }
+      if (r.id === toRoomId) {
+        return { ...r, status: 'band', activeOrderId: activeOrder.id };
+      }
+      return r;
+    });
+
+    set({ rooms: updatedRooms, activeOrders: updatedActiveOrders });
+    get()._persist();
+    return { success: true, toRoom };
   },
 
   // Menu CRUD actions
