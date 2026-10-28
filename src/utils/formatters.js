@@ -23,6 +23,37 @@ export function formatCurrency(amount, includeSuffix = true, lang = null) {
 }
 
 /**
+ * Format quantity with its unit (e.g., "1.3 kg" or "3 dona")
+ * @param {number|string} quantity
+ * @param {string} unit - 'dona', 'kg', 'l', 'porsiya'
+ * @param {string|null} lang
+ * @returns {string}
+ */
+export function formatQuantity(quantity, unit = 'dona', lang = null) {
+  const currentLang =
+    lang ||
+    (typeof localStorage !== 'undefined'
+      ? localStorage.getItem('choyxona_lang') || 'latn'
+      : 'latn');
+  const isCyrl = currentLang === 'cyrl';
+  const num = Number(quantity) || 0;
+
+  // Format decimal smoothly without unnecessary trailing zeros
+  const numStr = Number.isInteger(num) ? String(num) : String(Math.round(num * 100) / 100);
+
+  if (unit === 'kg') {
+    return `${numStr} ${isCyrl ? 'кг' : 'kg'}`;
+  }
+  if (unit === 'l' || unit === 'litr') {
+    return `${numStr} ${isCyrl ? 'л' : 'L'}`;
+  }
+  if (unit === 'porsiya') {
+    return `${numStr} ${isCyrl ? 'порция' : 'porsiya'}`;
+  }
+  return `${numStr} ${isCyrl ? 'дона' : 'dona'}`;
+}
+
+/**
  * Format an ISO date string or Date object to a readable date string
  * @param {string|Date} date
  * @returns {string} e.g. "27.10.2026, 14:30"

@@ -205,9 +205,12 @@ export function MenuPage() {
                       </Badge>
                     </td>
 
-                    {/* Price */}
+                    {/* Price with Unit */}
                     <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
-                      {formatCurrency(item.price, true, lang)}
+                      <span>{formatCurrency(item.price, true, lang)}</span>
+                      <span className="text-xs text-slate-400 dark:text-slate-500 font-normal ml-1">
+                        / {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
+                      </span>
                     </td>
 
                     {/* Status Toggle */}

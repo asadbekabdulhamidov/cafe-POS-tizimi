@@ -10,6 +10,7 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Shashlik');
   const [price, setPrice] = useState('');
+  const [unit, setUnit] = useState('dona');
   const [description, setDescription] = useState('');
   const [isAvailable, setIsAvailable] = useState(true);
   const [errors, setErrors] = useState({});
@@ -19,12 +20,14 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
       setName(item.name || '');
       setCategory(item.category || 'Shashlik');
       setPrice(item.price !== undefined ? String(item.price) : '');
+      setUnit(item.unit || 'dona');
       setDescription(item.description || '');
       setIsAvailable(item.isAvailable !== undefined ? item.isAvailable : true);
     } else {
       setName('');
       setCategory('Shashlik');
       setPrice('');
+      setUnit('dona');
       setDescription('');
       setIsAvailable(true);
     }
@@ -32,6 +35,13 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
   }, [item, isOpen]);
 
   const categories = INITIAL_CATEGORIES.filter((c) => c !== 'Barchasi');
+
+  const unitOptions = [
+    { value: 'dona', label: lang === 'cyrl' ? 'Дона (дона)' : 'Dona (dona)' },
+    { value: 'kg', label: lang === 'cyrl' ? 'Килограмм (кг)' : 'Kilogramm (kg)' },
+    { value: 'porsiya', label: lang === 'cyrl' ? 'Порция' : 'Porsiya' },
+    { value: 'litr', label: lang === 'cyrl' ? 'Литр (л)' : 'Litr (L)' },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -54,6 +64,7 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
       name: name.trim(),
       category,
       price: numPrice,
+      unit,
       description: description.trim(),
       isAvailable,
     });
@@ -83,7 +94,7 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
           autoFocus
         />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Select
             label={t('menu.col_category')}
             value={category}
@@ -91,19 +102,26 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
             options={categories.map((c) => ({ value: c, label: localize(c) }))}
           />
 
-          <Input
-            label={`${t('menu.col_price')} (${t('currency.som')})`}
-            type="number"
-            placeholder="30 000"
-            value={price}
-            onChange={(e) => {
-              setPrice(e.target.value);
-              if (errors.price) setErrors({ ...errors, price: null });
-            }}
-            error={errors.price}
-            required
+          <Select
+            label={t('menu.unit_label')}
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            options={unitOptions}
           />
         </div>
+
+        <Input
+          label={`${t('menu.col_price')} (${t('currency.som')} / ${unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')})`}
+          type="number"
+          placeholder="30 000"
+          value={price}
+          onChange={(e) => {
+            setPrice(e.target.value);
+            if (errors.price) setErrors({ ...errors, price: null });
+          }}
+          error={errors.price}
+          required
+        />
 
         <div>
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">

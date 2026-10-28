@@ -15,6 +15,7 @@ import {
   DoorOpen,
   ArrowRightLeft,
   Printer,
+  Scale,
 } from 'lucide-react';
 import { usePOSStore } from '../store/usePOSStore';
 import { useAppConfigStore } from '../store/useAppConfigStore';
@@ -25,7 +26,8 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { PaymentModal } from '../features/orders/PaymentModal';
 import { ReceiptModal } from '../features/orders/ReceiptModal';
 import { TransferModal } from '../features/orders/TransferModal';
-import { formatCurrency, formatTime, generateId } from '../utils/formatters';
+import { WeightModal } from '../features/orders/WeightModal';
+import { formatCurrency, formatTime, formatQuantity, generateId } from '../utils/formatters';
 import { INITIAL_CATEGORIES } from '../data/initialData';
 import { toast } from 'sonner';
 
@@ -60,6 +62,7 @@ export function RoomOrderPage() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isPreCheckModalOpen, setIsPreCheckModalOpen] = useState(false);
+  const [weightModalItem, setWeightModalItem] = useState(null);
   const [closedReceipt, setClosedReceipt] = useState(null);
 
   // Mobile active tab: 'menu' | 'cart'
@@ -134,8 +137,8 @@ export function RoomOrderPage() {
     );
   }
 
-  // Add dish to order
-  const handleAddItem = (menuItem) => {
+  // Add dish to order (supports kg and dona)
+  const handleAddItem = (menuItem, customWeight = null) => {
     if (!menuItem.isAvailable) {
       toast.error(
         lang === 'cyrl'
@@ -145,13 +148,24 @@ export function RoomOrderPage() {
       return;
     }
 
+    // If item is sold by kg and no custom weight was passed, open WeightModal
+    if (menuItem.unit === 'kg' && customWeight === null) {
+      setWeightModalItem(menuItem);
+      return;
+    }
+
+    const qtyToAdd = customWeight !== null ? Number(customWeight) : 1;
+
     setWorkingItems((prev) => {
       const idx = prev.findIndex((i) => i.menuItemId === menuItem.id);
       if (idx >= 0) {
         const updated = [...prev];
+        const currentQty = Number(updated[idx].quantity) || 0;
+        const newQty = Math.round((currentQty + qtyToAdd) * 100) / 100;
         updated[idx] = {
           ...updated[idx],
-          quantity: updated[idx].quantity + 1,
+          quantity: newQty,
+          unit: menuItem.unit || updated[idx].unit || 'dona',
         };
         return updated;
       } else {
@@ -162,7 +176,8 @@ export function RoomOrderPage() {
             menuItemId: menuItem.id,
             name: menuItem.name,
             price: Number(menuItem.price),
-            quantity: 1,
+            unit: menuItem.unit || 'dona',
+            quantity: Math.round(qtyToAdd * 100) / 100,
             addedAt: new Date().toISOString(),
           },
         ];
@@ -170,15 +185,26 @@ export function RoomOrderPage() {
     });
 
     setIsDirty(true);
+    if (customWeight !== null) {
+      toast.success(
+        lang === 'cyrl'
+          ? `${localize(menuItem.name)} (${qtyToAdd} кг) қўшилди!`
+          : `${menuItem.name} (${qtyToAdd} kg) qo‘shildi!`
+      );
+    }
   };
 
-  // Change quantity
-  const handleUpdateQuantity = (itemId, delta) => {
+  // Change quantity (delta or explicit)
+  const handleUpdateQuantity = (itemId, delta, explicitValue = null) => {
     setWorkingItems((prev) => {
       return prev
         .map((item) => {
           if (item.id === itemId) {
-            const nextQty = item.quantity + delta;
+            if (explicitValue !== null) {
+              const val = Math.max(0.01, Number(explicitValue));
+              return { ...item, quantity: Math.round(val * 100) / 100 };
+            }
+            const nextQty = Math.round((Number(item.quantity) + delta) * 100) / 100;
             return nextQty > 0 ? { ...item, quantity: nextQty } : null;
           }
           return item;
@@ -542,8 +568,8 @@ export function RoomOrderPage() {
                   >
                     {/* Badge showing quantity in current order */}
                     {inOrderQty > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[11px] font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-md">
-                        {inOrderQty}
+                      <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[11px] font-bold px-1.5 h-6 rounded-full flex items-center justify-center shadow-md">
+                        {inOrderQty} {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : ''}
                       </span>
                     )}
 
@@ -552,6 +578,11 @@ export function RoomOrderPage() {
                         <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md font-medium text-slate-600 dark:text-slate-300">
                           {localize(item.category)}
                         </span>
+                        {item.unit === 'kg' && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-extrabold text-[10px] tracking-wider uppercase">
+                            KG
+                          </span>
+                        )}
                         {!item.isAvailable && (
                           <span className="text-rose-600 dark:text-rose-400 font-semibold">
                             {t('order.out_of_stock')}
@@ -570,19 +601,35 @@ export function RoomOrderPage() {
                     </div>
 
                     <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                      <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
-                        {formatCurrency(item.price, true, lang)}
-                      </span>
+                      <div>
+                        <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
+                          {formatCurrency(item.price, true, lang)}
+                        </span>
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 block">
+                          / {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
+                        </span>
+                      </div>
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleAddItem(item);
                         }}
-                        className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors flex items-center justify-center cursor-pointer"
-                        title={t('btn.add')}
+                        className={`h-7 px-2 rounded-lg transition-colors flex items-center gap-1 cursor-pointer text-xs font-bold ${
+                          item.unit === 'kg'
+                            ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:bg-amber-600 hover:text-white'
+                            : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white'
+                        }`}
+                        title={item.unit === 'kg' ? t('weight.title') : t('btn.add')}
                       >
-                        <Plus className="w-4 h-4" />
+                        {item.unit === 'kg' ? (
+                          <>
+                            <Scale className="w-3.5 h-3.5" />
+                            <span>kg</span>
+                          </>
+                        ) : (
+                          <Plus className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -641,35 +688,79 @@ export function RoomOrderPage() {
                 workingItems.map((item) => (
                   <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <h5 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">
-                        {localize(item.name)}
-                      </h5>
+                      <div className="flex items-center gap-1.5">
+                        <h5 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">
+                          {localize(item.name)}
+                        </h5>
+                        {item.unit === 'kg' && (
+                          <span className="px-1 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-extrabold text-[9px] uppercase">
+                            KG
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                        {formatCurrency(item.price, true, lang)} / {t('unit.portion')}
+                        {formatCurrency(item.price, true, lang)} / {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
                       </p>
                     </div>
 
                     {/* Quantity controls (- qty +) */}
-                    <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                       <button
                         type="button"
-                        onClick={() => handleUpdateQuantity(item.id, -1)}
+                        onClick={() => handleUpdateQuantity(item.id, item.unit === 'kg' ? -0.1 : -1)}
                         className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
+                        title={item.unit === 'kg' ? '-0.1 kg' : '-1'}
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-3 h-3" />
                       </button>
 
-                      <span className="w-7 text-center text-xs font-bold text-slate-800 dark:text-slate-100">
-                        {item.quantity}
-                      </span>
+                      {item.unit === 'kg' ? (
+                        <div className="flex items-center gap-0.5 px-0.5">
+                          <input
+                            type="number"
+                            step="0.05"
+                            min="0.05"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const v = parseFloat(e.target.value);
+                              if (!isNaN(v) && v > 0) {
+                                handleUpdateQuantity(item.id, 0, v);
+                              }
+                            }}
+                            className="w-11 text-center text-xs font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded border border-slate-200 dark:border-slate-600 py-0.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                          <span className="text-[10px] font-bold text-slate-500 uppercase">
+                            {lang === 'cyrl' ? 'кг' : 'kg'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="w-6 text-center text-xs font-bold text-slate-800 dark:text-slate-100">
+                          {item.quantity}
+                        </span>
+                      )}
 
                       <button
                         type="button"
-                        onClick={() => handleUpdateQuantity(item.id, 1)}
+                        onClick={() => handleUpdateQuantity(item.id, item.unit === 'kg' ? 0.1 : 1)}
                         className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
+                        title={item.unit === 'kg' ? '+0.1 kg' : '+1'}
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3 h-3" />
                       </button>
+
+                      {item.unit === 'kg' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const found = menu.find((m) => m.id === item.menuItemId) || item;
+                            setWeightModalItem(found);
+                          }}
+                          className="p-1 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 transition-colors ml-0.5 cursor-pointer"
+                          title={t('weight.title')}
+                        >
+                          <Scale className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
 
                     {/* Line total & delete */}
@@ -855,6 +946,21 @@ export function RoomOrderPage() {
           discountAmount: workingDiscount,
           finalTotal,
           createdAt: currentOrder?.createdAt || new Date().toISOString(),
+        }}
+      />
+
+      {/* Weight Modal for Kilogram Dishes (Osh, Go'sht, etc.) */}
+      <WeightModal
+        isOpen={!!weightModalItem}
+        onClose={() => setWeightModalItem(null)}
+        menuItem={weightModalItem}
+        initialWeight={
+          weightModalItem
+            ? workingItems.find((i) => i.menuItemId === weightModalItem.id)?.quantity || 1
+            : 1
+        }
+        onConfirmWeight={(mItem, w) => {
+          handleAddItem(mItem, w);
         }}
       />
 

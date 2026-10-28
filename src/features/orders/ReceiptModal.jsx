@@ -2,7 +2,7 @@ import React from 'react';
 import { Printer, FileText } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
-import { formatCurrency, formatDateTime } from '../../utils/formatters';
+import { formatCurrency, formatDateTime, formatQuantity } from '../../utils/formatters';
 import { usePOSStore } from '../../store/usePOSStore';
 import { useAppConfigStore } from '../../store/useAppConfigStore';
 
@@ -103,7 +103,7 @@ export function ReceiptModal({ isOpen, onClose, order, isPreCheck = false }) {
                   <div className="truncate pr-2">
                     <span>{localize(item.name)}</span>
                     <div className="text-[10px] text-slate-500">
-                      {item.quantity} x {formatCurrency(item.price, true, lang)}
+                      {formatQuantity(item.quantity, item.unit || 'dona', lang)} × {formatCurrency(item.price, true, lang)}
                     </div>
                   </div>
                   <span className="font-semibold shrink-0">

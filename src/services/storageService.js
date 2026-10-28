@@ -93,7 +93,35 @@ export const storageService = {
   getMenu() {
     try {
       const data = localStorage.getItem(KEYS.MENU);
-      return data ? JSON.parse(data) : INITIAL_MENU;
+      let menu = data ? JSON.parse(data) : INITIAL_MENU;
+      // Ensure unit is present for all items
+      menu = menu.map((m) => {
+        let unit = m.unit;
+        if (!unit) {
+          const lower = m.name?.toLowerCase() || '';
+          if (
+            lower.includes('osh') ||
+            lower.includes('qozon') ||
+            lower.includes('tandir go‘sht') ||
+            lower.includes('tandir gosht')
+          ) {
+            unit = 'kg';
+          } else {
+            unit = 'dona';
+          }
+        }
+        return { ...m, unit };
+      });
+
+      // Ensure initial demo items like Choyxona oshi are available
+      const existingIds = new Set(menu.map((m) => m.id));
+      INITIAL_MENU.forEach((initItem) => {
+        if (!existingIds.has(initItem.id)) {
+          menu.unshift(initItem);
+        }
+      });
+
+      return menu;
     } catch {
       return INITIAL_MENU;
     }

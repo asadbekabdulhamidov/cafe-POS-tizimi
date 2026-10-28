@@ -15,7 +15,7 @@ import { Badge } from '../components/ui/Badge';
 import { Input } from '../components/ui/Input';
 import { EmptyState } from '../components/ui/EmptyState';
 import { ReceiptModal } from '../features/orders/ReceiptModal';
-import { formatCurrency, formatDateTime } from '../utils/formatters';
+import { formatCurrency, formatDateTime, formatQuantity } from '../utils/formatters';
 
 export function ReportsPage() {
   const { closedOrders, rooms } = usePOSStore();
@@ -52,11 +52,12 @@ export function ReportsPage() {
         if (!counts[item.name]) {
           counts[item.name] = {
             name: item.name,
+            unit: item.unit || 'dona',
             quantity: 0,
             revenue: 0,
           };
         }
-        counts[item.name].quantity += item.quantity;
+        counts[item.name].quantity = Math.round((counts[item.name].quantity + Number(item.quantity)) * 100) / 100;
         counts[item.name].revenue += item.quantity * item.price;
       });
     });
@@ -164,7 +165,7 @@ export function ReportsPage() {
                       </span>
                       <div className="text-right">
                         <span className="font-bold text-emerald-700 dark:text-emerald-400">
-                          {dish.quantity} {t('unit.portion')}
+                          {formatQuantity(dish.quantity, dish.unit, lang)}
                         </span>
                         <span className="text-slate-400 dark:text-slate-500 text-[11px] ml-2">
                           ({formatCurrency(dish.revenue, true, lang)})
@@ -320,7 +321,7 @@ export function ReportsPage() {
                     </td>
                     <td className="py-3.5 px-4 text-slate-600 dark:text-slate-300 max-w-xs truncate text-xs">
                       {(order.items || [])
-                        .map((i) => `${localize(i.name)} (x${i.quantity})`)
+                        .map((i) => `${localize(i.name)} (${formatQuantity(i.quantity, i.unit, lang)})`)
                         .join(', ')}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">

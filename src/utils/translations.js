@@ -20,6 +20,17 @@ export const DICTIONARY = {
   'unit.people': { latn: 'kishi', cyrl: 'киши' },
   'unit.items': { latn: 'ta', cyrl: 'та' },
   'unit.portion': { latn: 'dona', cyrl: 'дона' },
+  'unit.kg': { latn: 'kg', cyrl: 'кг' },
+  'unit.l': { latn: 'L', cyrl: 'л' },
+  'unit.porsiya': { latn: 'porsiya', cyrl: 'порция' },
+
+  // Weight Modal for kg items
+  'weight.title': { latn: 'Taom vaznini kiriting (kg)', cyrl: 'Таом вазнини киритинг (кг)' },
+  'weight.sub': { latn: 'Osh yoki go‘sht vaznini aniq belgilang', cyrl: 'Ош ёки гўшт вазнини аниқ белгиланг' },
+  'weight.quick': { latn: 'Tezkor vazn tugmalari:', cyrl: 'Тезкор вазн тугмалари:' },
+  'weight.input_label': { latn: 'Vazn (kg):', cyrl: 'Вазн (кг):' },
+  'weight.add_to_order': { latn: 'Buyurtmaga qo‘shish', cyrl: 'Буюртмага қўшиш' },
+  'menu.unit_label': { latn: 'O‘lchov birligi', cyrl: 'Ўлчов бирлиги' },
 
   // Time & relative
   'time.just_now': { latn: 'Hozirgina', cyrl: 'Ҳозиргина' },

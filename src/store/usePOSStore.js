@@ -106,7 +106,7 @@ export const usePOSStore = create((set, get) => ({
   },
 
   // Add a dish to a room's active order
-  addItemToRoom: (roomId, menuItem) => {
+  addItemToRoom: (roomId, menuItem, customQuantity = null) => {
     let order = get().getActiveOrderForRoom(roomId);
     if (!order) {
       order = get().startOrderForRoom(roomId);
@@ -114,21 +114,26 @@ export const usePOSStore = create((set, get) => ({
 
     const items = [...order.items];
     const existingItemIndex = items.findIndex((i) => i.menuItemId === menuItem.id);
+    const qtyToAdd = customQuantity !== null ? Number(customQuantity) : 1;
 
     if (existingItemIndex >= 0) {
       // Increase quantity
+      const currentQty = Number(items[existingItemIndex].quantity) || 0;
+      const newQty = Math.round((currentQty + qtyToAdd) * 100) / 100;
       items[existingItemIndex] = {
         ...items[existingItemIndex],
-        quantity: items[existingItemIndex].quantity + 1,
+        quantity: newQty,
+        unit: menuItem.unit || items[existingItemIndex].unit || 'dona',
       };
     } else {
-      // Snapshot price and name
+      // Snapshot price, name, and unit
       items.push({
         id: generateId('item'),
         menuItemId: menuItem.id,
         name: menuItem.name,
         price: Number(menuItem.price),
-        quantity: 1,
+        unit: menuItem.unit || 'dona',
+        quantity: Math.round(qtyToAdd * 100) / 100,
         addedAt: new Date().toISOString(),
       });
     }
@@ -137,14 +142,18 @@ export const usePOSStore = create((set, get) => ({
   },
 
   // Update quantity of an item in room's active order
-  updateItemQuantity: (roomId, itemId, delta) => {
+  updateItemQuantity: (roomId, itemId, delta, explicitValue = null) => {
     const order = get().getActiveOrderForRoom(roomId);
     if (!order) return null;
 
     let items = order.items
       .map((item) => {
         if (item.id === itemId) {
-          const newQty = item.quantity + delta;
+          if (explicitValue !== null) {
+            const val = Number(explicitValue);
+            return val > 0 ? { ...item, quantity: Math.round(val * 100) / 100 } : null;
+          }
+          const newQty = Math.round((item.quantity + delta) * 100) / 100;
           return newQty > 0 ? { ...item, quantity: newQty } : null;
         }
         return item;
@@ -301,6 +310,7 @@ export const usePOSStore = create((set, get) => ({
       name: itemData.name.trim(),
       category: itemData.category || 'Boshqa',
       price: Math.max(0, Number(itemData.price) || 0),
+      unit: itemData.unit || 'dona',
       isAvailable: itemData.isAvailable !== undefined ? itemData.isAvailable : true,
       description: itemData.description?.trim() || '',
     };
@@ -320,6 +330,7 @@ export const usePOSStore = create((set, get) => ({
             name: itemData.name?.trim() ?? item.name,
             category: itemData.category ?? item.category,
             price: itemData.price !== undefined ? Math.max(0, Number(itemData.price)) : item.price,
+            unit: itemData.unit ?? item.unit ?? 'dona',
             isAvailable: itemData.isAvailable !== undefined ? itemData.isAvailable : item.isAvailable,
             description: itemData.description?.trim() ?? item.description,
           }
