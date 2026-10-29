@@ -212,6 +212,52 @@ export function RoomOrderPage() {
     }
   };
 
+  // Set explicit quantity (replaces existing item quantity or adds fresh)
+  const handleSetItemQuantity = (menuItem, quantity) => {
+    const qty = Math.max(0.01, Math.round(Number(quantity) * 100) / 100);
+    const isKg = menuItem.unit === 'kg';
+    const isPors = menuItem.unit === 'pors' || menuItem.unit === 'porsiya';
+
+    setWorkingItems((prev) => {
+      const idx = prev.findIndex((i) => i.menuItemId === menuItem.id);
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = {
+          ...updated[idx],
+          quantity: qty,
+          unit: menuItem.unit || updated[idx].unit || (isPors ? 'pors' : isKg ? 'kg' : 'dona'),
+        };
+        return updated;
+      } else {
+        return [
+          ...prev,
+          {
+            id: generateId('item'),
+            menuItemId: menuItem.id,
+            name: menuItem.name,
+            price: Number(menuItem.price),
+            unit: menuItem.unit || (isPors ? 'pors' : isKg ? 'kg' : 'dona'),
+            quantity: qty,
+            addedAt: new Date().toISOString(),
+          },
+        ];
+      }
+    });
+
+    setIsDirty(true);
+    const unitLabel = isKg
+      ? (lang === 'cyrl' ? 'кг' : 'kg')
+      : isPors
+      ? (lang === 'cyrl' ? 'пор' : 'pors')
+      : (lang === 'cyrl' ? 'та' : 'ta');
+
+    toast.success(
+      lang === 'cyrl'
+        ? `${localize(menuItem.name)} (${qty} ${unitLabel}) сақланди!`
+        : `${menuItem.name} (${qty} ${unitLabel}) saqlandi!`
+    );
+  };
+
   // Change quantity (delta or explicit)
   const handleUpdateQuantity = (itemId, delta, explicitValue = null) => {
     setWorkingItems((prev) => {
@@ -222,8 +268,63 @@ export function RoomOrderPage() {
               const val = Math.max(0.01, Number(explicitValue));
               return { ...item, quantity: Math.round(val * 100) / 100 };
             }
-            const nextQty = Math.round((Number(item.quantity) + delta) * 100) / 100;
-            return nextQty > 0 ? { ...item, quantity: nextQty } : null;
+            const current = Number(item.quantity) || 0;
+            let nextQty;
+            const isKg = item.unit === 'kg';
+            const isPors = item.unit === 'pors' || item.unit === 'porsiya';
+
+            if (delta < 0) {
+              if (isKg) {
+                nextQty = Math.max(0, Math.round((current - 0.1) * 100) / 100);
+              } else if (isPors) {
+                if (current > 1) {
+                  // e.g. 2 -> 1.5, 1.5 -> 1.0
+                  nextQty = Math.round((current - 0.5) * 100) / 100;
+                } else if (current === 1) {
+                  nextQty = 0.7; // 1 dan tushganda 0.7 pors
+                } else if (current === 0.7) {
+                  nextQty = 0.5; // 0.7 dan tushganda 0.5 (yarimta)
+                } else if (current > 0.5) {
+                  nextQty = 0.5;
+                } else {
+                  nextQty = 0; // 0.5 dan pastga o'chirish
+                }
+              } else {
+                // Dona (non va h.k.)
+                if (current > 1 && current % 1 !== 0) {
+                  nextQty = Math.floor(current); // 1.5 -> 1
+                } else if (current > 1) {
+                  nextQty = current - 1; // 2 -> 1
+                } else if (current === 1) {
+                  nextQty = 0.5; // 1 ta non -> 0.5 yarimta non!
+                } else {
+                  nextQty = 0; // 0.5 dan pastga o'chirish
+                }
+              }
+            } else {
+              // delta > 0 (increment)
+              if (isKg) {
+                nextQty = Math.round((current + 0.1) * 100) / 100;
+              } else if (isPors) {
+                if (current === 0.5) {
+                  nextQty = 0.7;
+                } else if (current === 0.7) {
+                  nextQty = 1.0;
+                } else if (current % 1 !== 0) {
+                  nextQty = Math.round((current + 0.5) * 100) / 100;
+                } else {
+                  nextQty = current + 1;
+                }
+              } else {
+                // Dona
+                if (current === 0.5) {
+                  nextQty = 1.0; // 0.5 -> 1 ta
+                } else {
+                  nextQty = current + 1;
+                }
+              }
+            }
+            return nextQty > 0 ? { ...item, quantity: Math.round(nextQty * 100) / 100 } : null;
           }
           return item;
         })
@@ -763,20 +864,13 @@ export function RoomOrderPage() {
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                       <button
                         type="button"
-                        onClick={() =>
-                          handleUpdateQuantity(
-                            item.id,
-                            item.unit === 'kg' || item.unit === 'pors' || item.unit === 'porsiya'
-                              ? -0.1
-                              : -1
-                          )
-                        }
+                        onClick={() => handleUpdateQuantity(item.id, -1)}
                         className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
                         title={
                           item.unit === 'kg'
                             ? '-0.1 kg'
                             : item.unit === 'pors' || item.unit === 'porsiya'
-                            ? '-0.1 pors'
+                            ? '- pors'
                             : '-1'
                         }
                       >
@@ -822,31 +916,50 @@ export function RoomOrderPage() {
                           </span>
                         </div>
                       ) : (
-                        <span className="w-6 text-center text-xs font-bold text-slate-800 dark:text-slate-100">
-                          {item.quantity}
-                        </span>
+                        <div className="flex items-center gap-0.5 px-0.5">
+                          <input
+                            type="number"
+                            step="0.5"
+                            min="0.5"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const v = parseFloat(e.target.value);
+                              if (!isNaN(v) && v > 0) {
+                                handleUpdateQuantity(item.id, 0, v);
+                              }
+                            }}
+                            className="w-10 text-center text-xs font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded border border-slate-200 dark:border-slate-600 py-0.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                        </div>
                       )}
 
                       <button
                         type="button"
-                        onClick={() =>
-                          handleUpdateQuantity(
-                            item.id,
-                            item.unit === 'kg' || item.unit === 'pors' || item.unit === 'porsiya'
-                              ? 0.1
-                              : 1
-                          )
-                        }
+                        onClick={() => handleUpdateQuantity(item.id, 1)}
                         className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
                         title={
                           item.unit === 'kg'
                             ? '+0.1 kg'
                             : item.unit === 'pors' || item.unit === 'porsiya'
-                            ? '+0.1 pors'
+                            ? '+ pors'
                             : '+1'
                         }
                       >
                         <Plus className="w-3 h-3" />
+                      </button>
+
+                      {/* Quick half button (½) for quick half portion or half bread (0.5) */}
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateQuantity(item.id, 0, item.quantity === 0.5 ? 1 : 0.5)}
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-black transition-all cursor-pointer ${
+                          item.quantity === 0.5
+                            ? 'bg-amber-600 text-white shadow-xs'
+                            : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60'
+                        }`}
+                        title={lang === 'cyrl' ? 'Яримта (0.5)' : 'Yarimta (0.5)'}
+                      >
+                        ½
                       </button>
 
                       {item.unit === 'kg' && (
@@ -1097,7 +1210,7 @@ export function RoomOrderPage() {
             : 1
         }
         onConfirmWeight={(mItem, w) => {
-          handleAddItem(mItem, w);
+          handleSetItemQuantity(mItem, w);
         }}
       />
 
@@ -1112,7 +1225,7 @@ export function RoomOrderPage() {
             : 1
         }
         onConfirmPortion={(mItem, p) => {
-          handleAddItem(mItem, p);
+          handleSetItemQuantity(mItem, p);
         }}
       />
 

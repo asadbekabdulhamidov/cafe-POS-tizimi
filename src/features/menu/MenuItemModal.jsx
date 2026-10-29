@@ -20,14 +20,16 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
       setName(item.name || '');
       setCategory(item.category || 'Shashlik');
       setPrice(item.price !== undefined ? String(item.price) : '');
-      setUnit(item.unit || 'dona');
+      const normalizedUnit =
+        item.unit === 'porsiya' || item.unit === 'pors' ? 'pors' : item.unit || 'dona';
+      setUnit(normalizedUnit);
       setDescription(item.description || '');
       setIsAvailable(item.isAvailable !== undefined ? item.isAvailable : true);
     } else {
       setName('');
       setCategory('Shashlik');
       setPrice('');
-      setUnit('dona');
+      setUnit('pors');
       setDescription('');
       setIsAvailable(true);
     }
@@ -35,13 +37,6 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
   }, [item, isOpen]);
 
   const categories = INITIAL_CATEGORIES.filter((c) => c !== 'Barchasi');
-
-  const unitOptions = [
-    { value: 'pors', label: lang === 'cyrl' ? 'Порция (пор - 0.5, 0.7, 1)' : 'Porsiya (pors - 0.5, 0.7, 1)' },
-    { value: 'dona', label: lang === 'cyrl' ? 'Дона (дона)' : 'Dona (dona)' },
-    { value: 'kg', label: lang === 'cyrl' ? 'Килограмм (кг)' : 'Kilogramm (kg)' },
-    { value: 'litr', label: lang === 'cyrl' ? 'Литр (л)' : 'Litr (L)' },
-  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -64,7 +59,7 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
       name: name.trim(),
       category,
       price: numPrice,
-      unit,
+      unit: unit === 'porsiya' ? 'pors' : unit || 'pors',
       description: description.trim(),
       isAvailable,
     });
@@ -94,20 +89,83 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
           autoFocus
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Select
-            label={t('menu.col_category')}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            options={categories.map((c) => ({ value: c, label: localize(c) }))}
-          />
+        <Select
+          label={t('menu.col_category')}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          options={categories.map((c) => ({ value: c, label: localize(c) }))}
+        />
 
-          <Select
-            label={t('menu.unit_label')}
-            value={unit}
-            onChange={(e) => setUnit(e.target.value)}
-            options={unitOptions}
-          />
+        {/* Visual Unit Selector (Porsiya, Dona, Kilogramm, Litr) */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            {t('menu.unit_label')}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setUnit('pors')}
+              className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 cursor-pointer active:scale-95 ${
+                unit === 'pors'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/60 border-indigo-600 text-indigo-900 dark:text-indigo-200 ring-2 ring-indigo-500/30 font-bold'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+              }`}
+            >
+              <span className="text-xl shrink-0">🍲</span>
+              <div className="min-w-0">
+                <p className="text-xs leading-tight">{lang === 'cyrl' ? 'Порция (пор)' : 'Porsiya (pors)'}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">0.5, 0.7, 1 pors</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setUnit('dona')}
+              className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 cursor-pointer active:scale-95 ${
+                unit === 'dona'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-600 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/30 font-bold'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+              }`}
+            >
+              <span className="text-xl shrink-0">🥖</span>
+              <div className="min-w-0">
+                <p className="text-xs leading-tight">{lang === 'cyrl' ? 'Дона' : 'Dona'}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">0.5 yarimta, 1 dona</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setUnit('kg')}
+              className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 cursor-pointer active:scale-95 ${
+                unit === 'kg'
+                  ? 'bg-amber-50 dark:bg-amber-950/60 border-amber-600 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/30 font-bold'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+              }`}
+            >
+              <span className="text-xl shrink-0">⚖️</span>
+              <div className="min-w-0">
+                <p className="text-xs leading-tight">{lang === 'cyrl' ? 'Килограмм' : 'Kilogramm (kg)'}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">1.3 kg, go‘sht, osh</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setUnit('litr')}
+              className={`p-2.5 rounded-xl border text-left transition-all flex items-center gap-2.5 cursor-pointer active:scale-95 ${
+                unit === 'litr'
+                  ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-600 text-blue-900 dark:text-blue-200 ring-2 ring-blue-500/30 font-bold'
+                  : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+              }`}
+            >
+              <span className="text-xl shrink-0">🫖</span>
+              <div className="min-w-0">
+                <p className="text-xs leading-tight">{lang === 'cyrl' ? 'Литр (л)' : 'Litr (L)'}</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Choy, sharbat</p>
+              </div>
+            </button>
+          </div>
         </div>
 
         <Input

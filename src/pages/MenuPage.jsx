@@ -278,8 +278,20 @@ export function MenuPage() {
                   >
                     {/* Name & Desc */}
                     <td className="py-3.5 px-4 sm:px-6">
-                      <div className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
-                        {localize(item.name)}
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                          {localize(item.name)}
+                        </span>
+                        {item.unit === 'kg' && (
+                          <span className="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-extrabold text-[9px] uppercase">
+                            KG
+                          </span>
+                        )}
+                        {(item.unit === 'pors' || item.unit === 'porsiya') && (
+                          <span className="px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 font-extrabold text-[9px] uppercase">
+                            PORS
+                          </span>
+                        )}
                       </div>
                       {item.description && (
                         <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">

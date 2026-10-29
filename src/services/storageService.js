@@ -99,8 +99,31 @@ export const storageService = {
         let unit = m.unit;
         const lower = m.name?.toLowerCase() || '';
 
+        if (unit === 'porsiya') {
+          unit = 'pors';
+        }
+
+        const isTraditionalPortionDish =
+          lower.includes('mastava') ||
+          lower.includes('мастава') ||
+          lower.includes('sho‘rva') ||
+          lower.includes('shorva') ||
+          lower.includes('шўрва') ||
+          lower.includes('moxora') ||
+          lower.includes('мохора') ||
+          lower.includes('lag‘mon') ||
+          lower.includes('lagmon') ||
+          lower.includes('лағмон') ||
+          lower.includes('лагмон') ||
+          lower.includes('manti') ||
+          lower.includes('манти') ||
+          lower.includes('chuchvara') ||
+          lower.includes('чучвара') ||
+          lower.includes('pors') ||
+          lower.includes('порц');
+
         if (!unit) {
-          if (lower.includes('pors') || lower.includes('порц')) {
+          if (isTraditionalPortionDish) {
             unit = 'pors';
           } else if (
             lower.includes('kg') ||
@@ -113,7 +136,8 @@ export const storageService = {
           } else {
             unit = 'dona';
           }
-        } else if (unit === 'porsiya') {
+        } else if (unit === 'dona' && isTraditionalPortionDish) {
+          // Upgrade legacy dish with unit 'dona' to 'pors'
           unit = 'pors';
         }
         return { ...m, unit };

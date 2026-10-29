@@ -305,12 +305,17 @@ export const usePOSStore = create((set, get) => ({
   // Menu CRUD actions
   addMenuItem: (itemData) => {
     const { menu } = get();
+    const normalizedUnit =
+      itemData.unit === 'porsiya' || itemData.unit === 'pors'
+        ? 'pors'
+        : itemData.unit || 'pors';
+
     const newItem = {
       id: generateId('m'),
       name: itemData.name.trim(),
       category: itemData.category || 'Boshqa',
       price: Math.max(0, Number(itemData.price) || 0),
-      unit: itemData.unit || 'dona',
+      unit: normalizedUnit,
       isAvailable: itemData.isAvailable !== undefined ? itemData.isAvailable : true,
       description: itemData.description?.trim() || '',
     };
@@ -322,7 +327,12 @@ export const usePOSStore = create((set, get) => ({
   },
 
   updateMenuItem: (id, itemData) => {
-    const { menu } = get();
+    const { menu, activeOrders } = get();
+    const normalizedUnit =
+      itemData.unit === 'porsiya' || itemData.unit === 'pors'
+        ? 'pors'
+        : itemData.unit;
+
     const updatedMenu = menu.map((item) =>
       item.id === id
         ? {
@@ -330,14 +340,29 @@ export const usePOSStore = create((set, get) => ({
             name: itemData.name?.trim() ?? item.name,
             category: itemData.category ?? item.category,
             price: itemData.price !== undefined ? Math.max(0, Number(itemData.price)) : item.price,
-            unit: itemData.unit ?? item.unit ?? 'dona',
+            unit: normalizedUnit ?? item.unit ?? 'pors',
             isAvailable: itemData.isAvailable !== undefined ? itemData.isAvailable : item.isAvailable,
             description: itemData.description?.trim() ?? item.description,
           }
         : item
     );
 
-    set({ menu: updatedMenu });
+    // Also update any active orders referencing this menu item
+    const updatedActiveOrders = activeOrders.map((order) => {
+      const items = (order.items || []).map((ordItem) =>
+        ordItem.menuItemId === id
+          ? {
+              ...ordItem,
+              name: itemData.name?.trim() ?? ordItem.name,
+              price: itemData.price !== undefined ? Math.max(0, Number(itemData.price)) : ordItem.price,
+              unit: normalizedUnit ?? ordItem.unit ?? 'pors',
+            }
+          : ordItem
+      );
+      return { ...order, items };
+    });
+
+    set({ menu: updatedMenu, activeOrders: updatedActiveOrders });
     get()._persist();
   },
 
