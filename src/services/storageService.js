@@ -151,6 +151,13 @@ export const storageService = {
         }
       });
 
+      // Save migrated menu back to localStorage so it stays upgraded
+      try {
+        localStorage.setItem(KEYS.MENU, JSON.stringify(menu));
+      } catch {
+        // ignore
+      }
+
       return menu;
     } catch {
       return INITIAL_MENU;
@@ -169,7 +176,29 @@ export const storageService = {
   getActiveOrders() {
     try {
       const data = localStorage.getItem(KEYS.ACTIVE_ORDERS);
-      return data ? JSON.parse(data) : INITIAL_ACTIVE_ORDERS;
+      const orders = data ? JSON.parse(data) : INITIAL_ACTIVE_ORDERS;
+      return orders.map((order) => ({
+        ...order,
+        items: (order.items || []).map((item) => {
+          let unit = item.unit;
+          if (unit === 'porsiya') unit = 'pors';
+          const lower = item.name?.toLowerCase() || '';
+          if (
+            unit === 'dona' &&
+            (lower.includes('mastava') ||
+              lower.includes('мастава') ||
+              lower.includes('sho‘rva') ||
+              lower.includes('shorva') ||
+              lower.includes('lag‘mon') ||
+              lower.includes('lagmon') ||
+              lower.includes('manti') ||
+              lower.includes('chuchvara'))
+          ) {
+            unit = 'pors';
+          }
+          return { ...item, unit };
+        }),
+      }));
     } catch {
       return INITIAL_ACTIVE_ORDERS;
     }
