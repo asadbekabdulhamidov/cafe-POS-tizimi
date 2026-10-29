@@ -37,9 +37,9 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
   const categories = INITIAL_CATEGORIES.filter((c) => c !== 'Barchasi');
 
   const unitOptions = [
+    { value: 'pors', label: lang === 'cyrl' ? 'Порция (пор - 0.5, 0.7, 1)' : 'Porsiya (pors - 0.5, 0.7, 1)' },
     { value: 'dona', label: lang === 'cyrl' ? 'Дона (дона)' : 'Dona (dona)' },
     { value: 'kg', label: lang === 'cyrl' ? 'Килограмм (кг)' : 'Kilogramm (kg)' },
-    { value: 'porsiya', label: lang === 'cyrl' ? 'Порция' : 'Porsiya' },
     { value: 'litr', label: lang === 'cyrl' ? 'Литр (л)' : 'Litr (L)' },
   ];
 
@@ -111,7 +111,13 @@ export function MenuItemModal({ isOpen, onClose, onSave, item = null }) {
         </div>
 
         <Input
-          label={`${t('menu.col_price')} (${t('currency.som')} / ${unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')})`}
+          label={`${t('menu.col_price')} (${t('currency.som')} / ${
+            unit === 'kg'
+              ? (lang === 'cyrl' ? 'кг' : 'kg')
+              : unit === 'pors' || unit === 'porsiya'
+              ? (lang === 'cyrl' ? 'пор' : 'pors')
+              : (lang === 'cyrl' ? 'дона' : 'dona')
+          })`}
           type="number"
           placeholder="30 000"
           value={price}

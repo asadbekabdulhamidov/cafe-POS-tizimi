@@ -97,10 +97,14 @@ export const storageService = {
       // Ensure unit is present for all items
       menu = menu.map((m) => {
         let unit = m.unit;
+        const lower = m.name?.toLowerCase() || '';
+
         if (!unit) {
-          const lower = m.name?.toLowerCase() || '';
-          if (
-            lower.includes('osh') ||
+          if (lower.includes('pors') || lower.includes('порц')) {
+            unit = 'pors';
+          } else if (
+            lower.includes('kg') ||
+            lower.includes('kilogramm') ||
             lower.includes('qozon') ||
             lower.includes('tandir go‘sht') ||
             lower.includes('tandir gosht')
@@ -109,6 +113,8 @@ export const storageService = {
           } else {
             unit = 'dona';
           }
+        } else if (unit === 'porsiya') {
+          unit = 'pors';
         }
         return { ...m, unit };
       });

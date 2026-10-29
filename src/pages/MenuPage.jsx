@@ -190,6 +190,11 @@ export function MenuPage() {
                           KG
                         </span>
                       )}
+                      {(item.unit === 'pors' || item.unit === 'porsiya') && (
+                        <span className="px-1.5 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 font-extrabold text-[9px] uppercase">
+                          PORS
+                        </span>
+                      )}
                     </div>
                     {item.description && (
                       <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 line-clamp-1">
@@ -201,7 +206,11 @@ export function MenuPage() {
                   <span className="font-extrabold text-sm text-slate-900 dark:text-slate-100 shrink-0">
                     {formatCurrency(item.price, true, lang)}
                     <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal ml-0.5">
-                      /{item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
+                      /{item.unit === 'kg'
+                        ? (lang === 'cyrl' ? 'кг' : 'kg')
+                        : (item.unit === 'pors' || item.unit === 'porsiya')
+                        ? (lang === 'cyrl' ? 'пор' : 'pors')
+                        : (lang === 'cyrl' ? 'дона' : 'dona')}
                     </span>
                   </span>
                 </div>
@@ -290,7 +299,11 @@ export function MenuPage() {
                     <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
                       <span>{formatCurrency(item.price, true, lang)}</span>
                       <span className="text-xs text-slate-400 dark:text-slate-500 font-normal ml-1">
-                        / {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
+                        / {item.unit === 'kg'
+                          ? (lang === 'cyrl' ? 'кг' : 'kg')
+                          : (item.unit === 'pors' || item.unit === 'porsiya')
+                          ? (lang === 'cyrl' ? 'пор' : 'pors')
+                          : (lang === 'cyrl' ? 'дона' : 'dona')}
                       </span>
                     </td>
 

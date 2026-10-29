@@ -34,13 +34,40 @@ export const INITIAL_CATEGORIES = [
 
 export const INITIAL_MENU = [
   {
+    id: 'm_osh_pors',
+    name: 'Choyxona oshi (Porsiya)',
+    category: 'Taomlar',
+    price: 35000,
+    unit: 'pors',
+    isAvailable: true,
+    description: 'Lazer guruch, go‘sht, noxat va mayiz (1 pors, 0.7 yoki 0.5 yarimta)',
+  },
+  {
     id: 'm_osh',
-    name: 'Choyxona oshi (To‘y oshi)',
+    name: 'Choyxona oshi (Kilogramm)',
     category: 'Taomlar',
     price: 130000,
     unit: 'kg',
     isAvailable: true,
-    description: 'Lazer guruch, barra qo‘y go‘shti va sariq sabzi bilan',
+    description: 'Lazer guruch, barra qo‘y go‘shti va sariq sabzi bilan (kg hisobida)',
+  },
+  {
+    id: 'm_manti_pors',
+    name: 'Manti (Porsiya)',
+    category: 'Taomlar',
+    price: 36000,
+    unit: 'pors',
+    isAvailable: true,
+    description: 'Qo‘y go‘shti va mayin xamir (1 pors yoki 0.5 yarimta)',
+  },
+  {
+    id: 'm_lagmon_pors',
+    name: 'Cho‘zma lag‘mon (Porsiya)',
+    category: 'Taomlar',
+    price: 38000,
+    unit: 'pors',
+    isAvailable: true,
+    description: 'Qo‘lda cho‘zilgan mazali lag‘mon (1 pors yoki 0.7 pors)',
   },
   {
     id: 'm_qozon',

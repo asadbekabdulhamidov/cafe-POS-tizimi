@@ -47,8 +47,8 @@ export function formatQuantity(quantity, unit = 'dona', lang = null) {
   if (unit === 'l' || unit === 'litr') {
     return `${numStr} ${isCyrl ? 'л' : 'L'}`;
   }
-  if (unit === 'porsiya') {
-    return `${numStr} ${isCyrl ? 'порция' : 'porsiya'}`;
+  if (unit === 'porsiya' || unit === 'pors') {
+    return `${numStr} ${isCyrl ? 'пор' : 'pors'}`;
   }
   return `${numStr} ${isCyrl ? 'дона' : 'dona'}`;
 }

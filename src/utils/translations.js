@@ -30,6 +30,19 @@ export const DICTIONARY = {
   'weight.quick': { latn: 'Tezkor vazn tugmalari:', cyrl: 'Тезкор вазн тугмалари:' },
   'weight.input_label': { latn: 'Vazn (kg):', cyrl: 'Вазн (кг):' },
   'weight.add_to_order': { latn: 'Buyurtmaga qo‘shish', cyrl: 'Буюртмага қўшиш' },
+
+  // Portion Modal for pors items (Osh, Lag'mon, Sho'rva, Manti, etc.)
+  'portion.title': { latn: 'Porsiya miqdorini tanlang', cyrl: 'Порция миқдорини танланг' },
+  'portion.sub': { latn: 'Osh yoki taom porsiyasini belgilang (0.5, 0.7, 1 yoki boshqa)', cyrl: 'Ош ёки таом порциясини белгиланг (0.5, 0.7, 1 ёки бошқа)' },
+  'portion.quick': { latn: 'Tezkor porsiya tugmalari:', cyrl: 'Тезкор порция тугмалари:' },
+  'portion.input_label': { latn: 'Porsiya soni / hajmi:', cyrl: 'Порция сони / ҳажми:' },
+  'portion.price_per_pors': { latn: '1 porsiya narxi:', cyrl: '1 порция нархи:' },
+  'portion.half': { latn: '0.5 pors (Yarimta)', cyrl: '0.5 пор (Яримта)' },
+  'portion.point_seven': { latn: '0.7 pors', cyrl: '0.7 пор' },
+  'portion.one': { latn: '1 pors (1 ta)', cyrl: '1 пор (1 та)' },
+  'portion.one_and_half': { latn: '1.5 pors', cyrl: '1.5 пор' },
+  'portion.two': { latn: '2 pors (2 ta)', cyrl: '2 пор (2 та)' },
+  'portion.add_to_order': { latn: 'Buyurtmaga qo‘shish', cyrl: 'Буюртмага қўшиш' },
   'menu.unit_label': { latn: 'O‘lchov birligi', cyrl: 'Ўлчов бирлиги' },
 
   // Time & relative

@@ -28,6 +28,7 @@ import { PaymentModal } from '../features/orders/PaymentModal';
 import { ReceiptModal } from '../features/orders/ReceiptModal';
 import { TransferModal } from '../features/orders/TransferModal';
 import { WeightModal } from '../features/orders/WeightModal';
+import { PortionModal } from '../features/orders/PortionModal';
 import { formatCurrency, formatTime, formatQuantity, generateId } from '../utils/formatters';
 import { INITIAL_CATEGORIES } from '../data/initialData';
 import { toast } from 'sonner';
@@ -64,6 +65,7 @@ export function RoomOrderPage() {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isPreCheckModalOpen, setIsPreCheckModalOpen] = useState(false);
   const [weightModalItem, setWeightModalItem] = useState(null);
+  const [portionModalItem, setPortionModalItem] = useState(null);
   const [closedReceipt, setClosedReceipt] = useState(null);
 
   // Mobile active tab: 'menu' | 'cart'
@@ -149,9 +151,18 @@ export function RoomOrderPage() {
       return;
     }
 
+    const isKg = menuItem.unit === 'kg';
+    const isPors = menuItem.unit === 'pors' || menuItem.unit === 'porsiya';
+
     // If item is sold by kg and no custom weight was passed, open WeightModal
-    if (menuItem.unit === 'kg' && customWeight === null) {
+    if (isKg && customWeight === null) {
       setWeightModalItem(menuItem);
+      return;
+    }
+
+    // If item is sold by portion (pors) and no custom portion was passed, open PortionModal
+    if (isPors && customWeight === null) {
+      setPortionModalItem(menuItem);
       return;
     }
 
@@ -187,10 +198,16 @@ export function RoomOrderPage() {
 
     setIsDirty(true);
     if (customWeight !== null) {
+      const unitLabel = isKg
+        ? (lang === 'cyrl' ? 'кг' : 'kg')
+        : isPors
+        ? (lang === 'cyrl' ? 'пор' : 'pors')
+        : (lang === 'cyrl' ? 'та' : 'ta');
+
       toast.success(
         lang === 'cyrl'
-          ? `${localize(menuItem.name)} (${qtyToAdd} кг) қўшилди!`
-          : `${menuItem.name} (${qtyToAdd} kg) qo‘shildi!`
+          ? `${localize(menuItem.name)} (${qtyToAdd} ${unitLabel}) қўшилди!`
+          : `${menuItem.name} (${qtyToAdd} ${unitLabel}) qo‘shildi!`
       );
     }
   };
@@ -569,8 +586,13 @@ export function RoomOrderPage() {
                   >
                     {/* Badge showing quantity in current order */}
                     {inOrderQty > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[11px] font-bold px-1.5 h-6 rounded-full flex items-center justify-center shadow-md">
-                        {inOrderQty} {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : ''}
+                      <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[11px] font-bold px-2 h-6 rounded-full flex items-center justify-center shadow-md">
+                        {inOrderQty}{' '}
+                        {item.unit === 'kg'
+                          ? (lang === 'cyrl' ? 'кг' : 'kg')
+                          : item.unit === 'pors' || item.unit === 'porsiya'
+                          ? (lang === 'cyrl' ? 'пор' : 'pors')
+                          : ''}
                       </span>
                     )}
 
@@ -582,6 +604,11 @@ export function RoomOrderPage() {
                         {item.unit === 'kg' && (
                           <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-extrabold text-[10px] tracking-wider uppercase">
                             KG
+                          </span>
+                        )}
+                        {(item.unit === 'pors' || item.unit === 'porsiya') && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 font-extrabold text-[10px] tracking-wider uppercase">
+                            PORS
                           </span>
                         )}
                         {!item.isAvailable && (
@@ -607,7 +634,12 @@ export function RoomOrderPage() {
                           {formatCurrency(item.price, true, lang)}
                         </span>
                         <span className="text-[11px] text-slate-400 dark:text-slate-500 block">
-                          / {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
+                          /{' '}
+                          {item.unit === 'kg'
+                            ? (lang === 'cyrl' ? 'кг' : 'kg')
+                            : item.unit === 'pors' || item.unit === 'porsiya'
+                            ? (lang === 'cyrl' ? 'пор' : 'pors')
+                            : (lang === 'cyrl' ? 'дона' : 'dona')}
                         </span>
                       </div>
                       <button
@@ -616,17 +648,30 @@ export function RoomOrderPage() {
                           e.stopPropagation();
                           handleAddItem(item);
                         }}
-                        className={`h-7 px-2 rounded-lg transition-colors flex items-center gap-1 cursor-pointer text-xs font-bold ${
+                        className={`h-7 px-2.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer text-xs font-bold active:scale-95 ${
                           item.unit === 'kg'
                             ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:bg-amber-600 hover:text-white'
+                            : item.unit === 'pors' || item.unit === 'porsiya'
+                            ? 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-600 hover:text-white'
                             : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white'
                         }`}
-                        title={item.unit === 'kg' ? t('weight.title') : t('btn.add')}
+                        title={
+                          item.unit === 'kg'
+                            ? t('weight.title')
+                            : item.unit === 'pors' || item.unit === 'porsiya'
+                            ? t('portion.title')
+                            : t('btn.add')
+                        }
                       >
                         {item.unit === 'kg' ? (
                           <>
                             <Scale className="w-3.5 h-3.5" />
                             <span>kg</span>
+                          </>
+                        ) : item.unit === 'pors' || item.unit === 'porsiya' ? (
+                          <>
+                            <Utensils className="w-3.5 h-3.5" />
+                            <span>pors</span>
                           </>
                         ) : (
                           <Plus className="w-4 h-4" />
@@ -689,7 +734,7 @@ export function RoomOrderPage() {
                 workingItems.map((item) => (
                   <div key={item.id} className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <h5 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">
                           {localize(item.name)}
                         </h5>
@@ -698,9 +743,19 @@ export function RoomOrderPage() {
                             KG
                           </span>
                         )}
+                        {(item.unit === 'pors' || item.unit === 'porsiya') && (
+                          <span className="px-1 py-0.2 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 font-extrabold text-[9px] uppercase">
+                            PORS
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                        {formatCurrency(item.price, true, lang)} / {item.unit === 'kg' ? (lang === 'cyrl' ? 'кг' : 'kg') : (lang === 'cyrl' ? 'дона' : 'dona')}
+                        {formatCurrency(item.price, true, lang)} /{' '}
+                        {item.unit === 'kg'
+                          ? (lang === 'cyrl' ? 'кг' : 'kg')
+                          : item.unit === 'pors' || item.unit === 'porsiya'
+                          ? (lang === 'cyrl' ? 'пор' : 'pors')
+                          : (lang === 'cyrl' ? 'дона' : 'dona')}
                       </p>
                     </div>
 
@@ -708,9 +763,22 @@ export function RoomOrderPage() {
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                       <button
                         type="button"
-                        onClick={() => handleUpdateQuantity(item.id, item.unit === 'kg' ? -0.1 : -1)}
+                        onClick={() =>
+                          handleUpdateQuantity(
+                            item.id,
+                            item.unit === 'kg' || item.unit === 'pors' || item.unit === 'porsiya'
+                              ? -0.1
+                              : -1
+                          )
+                        }
                         className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
-                        title={item.unit === 'kg' ? '-0.1 kg' : '-1'}
+                        title={
+                          item.unit === 'kg'
+                            ? '-0.1 kg'
+                            : item.unit === 'pors' || item.unit === 'porsiya'
+                            ? '-0.1 pors'
+                            : '-1'
+                        }
                       >
                         <Minus className="w-3 h-3" />
                       </button>
@@ -734,6 +802,25 @@ export function RoomOrderPage() {
                             {lang === 'cyrl' ? 'кг' : 'kg'}
                           </span>
                         </div>
+                      ) : item.unit === 'pors' || item.unit === 'porsiya' ? (
+                        <div className="flex items-center gap-0.5 px-0.5">
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0.1"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const v = parseFloat(e.target.value);
+                              if (!isNaN(v) && v > 0) {
+                                handleUpdateQuantity(item.id, 0, v);
+                              }
+                            }}
+                            className="w-11 text-center text-xs font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 rounded border border-slate-200 dark:border-slate-600 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                          />
+                          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase">
+                            {lang === 'cyrl' ? 'пор' : 'pors'}
+                          </span>
+                        </div>
                       ) : (
                         <span className="w-6 text-center text-xs font-bold text-slate-800 dark:text-slate-100">
                           {item.quantity}
@@ -742,9 +829,22 @@ export function RoomOrderPage() {
 
                       <button
                         type="button"
-                        onClick={() => handleUpdateQuantity(item.id, item.unit === 'kg' ? 0.1 : 1)}
+                        onClick={() =>
+                          handleUpdateQuantity(
+                            item.id,
+                            item.unit === 'kg' || item.unit === 'pors' || item.unit === 'porsiya'
+                              ? 0.1
+                              : 1
+                          )
+                        }
                         className="w-6 h-6 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center transition-colors cursor-pointer text-xs"
-                        title={item.unit === 'kg' ? '+0.1 kg' : '+1'}
+                        title={
+                          item.unit === 'kg'
+                            ? '+0.1 kg'
+                            : item.unit === 'pors' || item.unit === 'porsiya'
+                            ? '+0.1 pors'
+                            : '+1'
+                        }
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -760,6 +860,20 @@ export function RoomOrderPage() {
                           title={t('weight.title')}
                         >
                           <Scale className="w-3 h-3" />
+                        </button>
+                      )}
+
+                      {(item.unit === 'pors' || item.unit === 'porsiya') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const found = menu.find((m) => m.id === item.menuItemId) || item;
+                            setPortionModalItem(found);
+                          }}
+                          className="p-1 rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/60 transition-colors ml-0.5 cursor-pointer"
+                          title={t('portion.title')}
+                        >
+                          <Utensils className="w-3 h-3" />
                         </button>
                       )}
                     </div>
@@ -984,6 +1098,21 @@ export function RoomOrderPage() {
         }
         onConfirmWeight={(mItem, w) => {
           handleAddItem(mItem, w);
+        }}
+      />
+
+      {/* Portion Modal for Dishes sold by portions (Osh, Lag'mon, Sho'rva, Manti, etc.) */}
+      <PortionModal
+        isOpen={!!portionModalItem}
+        onClose={() => setPortionModalItem(null)}
+        menuItem={portionModalItem}
+        initialPortion={
+          portionModalItem
+            ? workingItems.find((i) => i.menuItemId === portionModalItem.id)?.quantity || 1
+            : 1
+        }
+        onConfirmPortion={(mItem, p) => {
+          handleAddItem(mItem, p);
         }}
       />
 
