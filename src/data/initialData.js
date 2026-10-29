@@ -303,6 +303,8 @@ export const INITIAL_CLOSED_ORDERS = [
     finalTotal: 230000,
     paymentMethod: 'karta',
     closedBy: 'admin',
+    shiftId: 'shift_demo_1',
+    cashierName: 'Alisher (Kassir)',
   },
   {
     id: 'ord_hist_2',
@@ -322,6 +324,8 @@ export const INITIAL_CLOSED_ORDERS = [
     finalTotal: 128000,
     paymentMethod: 'naqd',
     closedBy: 'admin',
+    shiftId: 'shift_demo_1',
+    cashierName: 'Alisher (Kassir)',
   },
   {
     id: 'ord_hist_3',
@@ -341,6 +345,8 @@ export const INITIAL_CLOSED_ORDERS = [
     finalTotal: 190000,
     paymentMethod: 'karta',
     closedBy: 'admin',
+    shiftId: 'shift_demo_1',
+    cashierName: 'Alisher (Kassir)',
   },
 ];
 
@@ -351,4 +357,35 @@ export const INITIAL_SETTINGS = {
   currency: 'so‘m',
   receiptHeader: 'Xush kelibsiz!',
   receiptFooter: 'Tashrifingiz uchun rahmat!',
+};
+
+export const INITIAL_SHIFTS = [
+  {
+    id: 'shift_demo_1',
+    shiftNumber: 1,
+    cashierName: 'Alisher (Kassir)',
+    openedAt: hoursAgo(10),
+    closedAt: hoursAgo(4),
+    status: 'closed',
+    openingCash: 500000,
+    closingCashActual: 1048000,
+    expectedCashInDrawer: 1048000,
+    cashDifference: 0,
+    cashTotal: 548000,
+    cardTotal: 420000,
+    discountTotal: 12000,
+    totalRevenue: 968000,
+    totalOrdersCount: 3,
+    notes: 'Kassa topshirildi, kamomad yo‘q.',
+    orderIds: ['ord_hist_1', 'ord_hist_2', 'ord_hist_3'],
+  },
+];
+
+export const INITIAL_ACTIVE_SHIFT = {
+  id: 'shift_active_2',
+  shiftNumber: 2,
+  cashierName: 'Alisher (Kassir)',
+  openedAt: hoursAgo(3.5),
+  status: 'open',
+  openingCash: 500000,
 };

@@ -9,6 +9,8 @@ import {
   INITIAL_ACTIVE_ORDERS,
   INITIAL_CLOSED_ORDERS,
   INITIAL_SETTINGS,
+  INITIAL_SHIFTS,
+  INITIAL_ACTIVE_SHIFT,
 } from '../data/initialData';
 
 const KEYS = {
@@ -19,6 +21,8 @@ const KEYS = {
   ACTIVE_ORDERS: 'choyxona_active_orders',
   CLOSED_ORDERS: 'choyxona_closed_orders',
   SETTINGS: 'choyxona_settings',
+  CURRENT_SHIFT: 'choyxona_current_shift',
+  SHIFTS: 'choyxona_shifts',
 };
 
 export const storageService = {
@@ -248,6 +252,45 @@ export const storageService = {
     }
   },
 
+  // Shifts (Kassa smenalari)
+  getCurrentShift() {
+    try {
+      const data = localStorage.getItem(KEYS.CURRENT_SHIFT);
+      return data !== null ? JSON.parse(data) : INITIAL_ACTIVE_SHIFT;
+    } catch {
+      return INITIAL_ACTIVE_SHIFT;
+    }
+  },
+
+  setCurrentShift(shift) {
+    try {
+      if (shift) {
+        localStorage.setItem(KEYS.CURRENT_SHIFT, JSON.stringify(shift));
+      } else {
+        localStorage.setItem(KEYS.CURRENT_SHIFT, JSON.stringify(null));
+      }
+    } catch (e) {
+      console.error('Failed to save current shift to localStorage', e);
+    }
+  },
+
+  getShifts() {
+    try {
+      const data = localStorage.getItem(KEYS.SHIFTS);
+      return data ? JSON.parse(data) : INITIAL_SHIFTS;
+    } catch {
+      return INITIAL_SHIFTS;
+    }
+  },
+
+  setShifts(shifts) {
+    try {
+      localStorage.setItem(KEYS.SHIFTS, JSON.stringify(shifts));
+    } catch (e) {
+      console.error('Failed to save shifts to localStorage', e);
+    }
+  },
+
   // Reset demo data back to initial
   resetAllDemoData() {
     try {
@@ -256,6 +299,8 @@ export const storageService = {
       localStorage.setItem(KEYS.ACTIVE_ORDERS, JSON.stringify(INITIAL_ACTIVE_ORDERS));
       localStorage.setItem(KEYS.CLOSED_ORDERS, JSON.stringify(INITIAL_CLOSED_ORDERS));
       localStorage.setItem(KEYS.SETTINGS, JSON.stringify(INITIAL_SETTINGS));
+      localStorage.setItem(KEYS.CURRENT_SHIFT, JSON.stringify(INITIAL_ACTIVE_SHIFT));
+      localStorage.setItem(KEYS.SHIFTS, JSON.stringify(INITIAL_SHIFTS));
       localStorage.setItem(KEYS.PIN, '1234');
       return true;
     } catch (e) {

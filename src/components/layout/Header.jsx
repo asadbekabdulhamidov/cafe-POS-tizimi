@@ -9,20 +9,28 @@ import {
   Moon,
   Languages,
   Download,
+  UserCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { usePOSStore } from '../../store/usePOSStore';
 import { useAppConfigStore } from '../../store/useAppConfigStore';
 import { Button } from '../ui/Button';
 import { PWAInstallModal } from '../ui/PWAInstallModal';
+import { OpenShiftModal } from '../../features/shifts/OpenShiftModal';
+import { CloseShiftModal } from '../../features/shifts/CloseShiftModal';
+import { ZReportModal } from '../../features/shifts/ZReportModal';
 import { toast } from 'sonner';
 
 export function Header({ onOpenSidebar }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { rooms, resetAllDemoData } = usePOSStore();
+  const { rooms, resetAllDemoData, currentShift } = usePOSStore();
   const { theme, toggleTheme, lang, toggleLang, t } = useAppConfigStore();
   const [time, setTime] = useState(() => new Date());
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+  const [isOpenShiftModalOpen, setIsOpenShiftModalOpen] = useState(false);
+  const [isCloseShiftModalOpen, setIsCloseShiftModalOpen] = useState(false);
+  const [selectedZReportShift, setSelectedZReportShift] = useState(null);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -149,6 +157,31 @@ export function Header({ onOpenSidebar }) {
           <RotateCcw className="w-4 h-4" />
         </button>
 
+        {/* Cashier Shift Indicator & Modal Trigger */}
+        {currentShift ? (
+          <button
+            onClick={() => setIsCloseShiftModalOpen(true)}
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/60 active:scale-95 transition-all cursor-pointer"
+            title={lang === 'cyrl' ? 'Сменани ёпиш ва Z-Ҳисобот' : 'Smenani yopish va Z-Hisobot'}
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+            <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="truncate max-w-[85px] sm:max-w-none">
+              {currentShift.cashierName.replace(' (Kassir)', '')} (#{currentShift.shiftNumber})
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsOpenShiftModalOpen(true)}
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-900/60 active:scale-95 transition-all cursor-pointer"
+            title={lang === 'cyrl' ? 'Янги смена очиш' : 'Yangi smena ochish'}
+          >
+            <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+            <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+            <span>{lang === 'cyrl' ? 'Смена ёпиқ' : 'Smena yopiq'}</span>
+          </button>
+        )}
+
         {/* Fast Action */}
         <Button
           variant="primary"
@@ -166,6 +199,26 @@ export function Header({ onOpenSidebar }) {
       <PWAInstallModal
         isOpen={isInstallModalOpen}
         onClose={() => setIsInstallModalOpen(false)}
+      />
+
+      {/* Open Shift Modal */}
+      <OpenShiftModal
+        isOpen={isOpenShiftModalOpen}
+        onClose={() => setIsOpenShiftModalOpen(false)}
+      />
+
+      {/* Close Shift Modal */}
+      <CloseShiftModal
+        isOpen={isCloseShiftModalOpen}
+        onClose={() => setIsCloseShiftModalOpen(false)}
+        onShiftClosed={(closedShift) => setSelectedZReportShift(closedShift)}
+      />
+
+      {/* Z-Report Modal */}
+      <ZReportModal
+        isOpen={!!selectedZReportShift}
+        onClose={() => setSelectedZReportShift(null)}
+        shift={selectedZReportShift}
       />
     </header>
   );

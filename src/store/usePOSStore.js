@@ -8,16 +8,20 @@ export const usePOSStore = create((set, get) => ({
   activeOrders: storageService.getActiveOrders(),
   closedOrders: storageService.getClosedOrders(),
   settings: storageService.getSettings(),
+  currentShift: storageService.getCurrentShift(),
+  shifts: storageService.getShifts(),
   isProcessingPayment: false,
 
   // Helper to persist everything
   _persist: () => {
-    const { rooms, menu, activeOrders, closedOrders, settings } = get();
+    const { rooms, menu, activeOrders, closedOrders, settings, currentShift, shifts } = get();
     storageService.setRooms(rooms);
     storageService.setMenu(menu);
     storageService.setActiveOrders(activeOrders);
     storageService.setClosedOrders(closedOrders);
     storageService.setSettings(settings);
+    storageService.setCurrentShift(currentShift);
+    storageService.setShifts(shifts);
   },
 
   // Get active order for a given roomId
@@ -218,6 +222,7 @@ export const usePOSStore = create((set, get) => ({
       const discount = Number(discountAmount ?? activeOrder.discountAmount) || 0;
       const finalTotal = Math.max(0, subtotal - discount);
 
+      const currentShift = state.currentShift;
       const closedOrder = {
         ...activeOrder,
         status: 'closed',
@@ -226,7 +231,9 @@ export const usePOSStore = create((set, get) => ({
         discountAmount: discount,
         subtotal,
         finalTotal,
-        closedBy,
+        closedBy: closedBy || (currentShift?.cashierName || 'Kassir'),
+        shiftId: currentShift?.id || null,
+        cashierName: currentShift?.cashierName || (closedBy || 'Kassir'),
         cashGiven: paymentMethod === 'naqd' && cashGiven !== undefined ? Number(cashGiven) : undefined,
         change: paymentMethod === 'naqd' && change !== undefined ? Number(change) : undefined,
       };
@@ -445,6 +452,113 @@ export const usePOSStore = create((set, get) => ({
     get()._persist();
   },
 
+  // Get live statistics for the current open shift
+  getCurrentShiftStats: () => {
+    const { currentShift, closedOrders } = get();
+    if (!currentShift) return null;
+
+    const shiftOrders = closedOrders.filter(
+      (o) => o.shiftId === currentShift.id || (!o.shiftId && o.closedAt >= currentShift.openedAt)
+    );
+
+    const cashTotal = shiftOrders
+      .filter((o) => o.paymentMethod === 'naqd')
+      .reduce((sum, o) => sum + (o.finalTotal || 0), 0);
+
+    const cardTotal = shiftOrders
+      .filter((o) => o.paymentMethod === 'karta')
+      .reduce((sum, o) => sum + (o.finalTotal || 0), 0);
+
+    const discountTotal = shiftOrders.reduce((sum, o) => sum + (o.discountAmount || 0), 0);
+    const totalRevenue = cashTotal + cardTotal;
+    const openingCash = Number(currentShift.openingCash) || 0;
+    const expectedCashInDrawer = openingCash + cashTotal;
+
+    return {
+      currentShift,
+      shiftOrders,
+      ordersCount: shiftOrders.length,
+      cashTotal,
+      cardTotal,
+      discountTotal,
+      totalRevenue,
+      openingCash,
+      expectedCashInDrawer,
+    };
+  },
+
+  // Open a new shift
+  openShift: ({ cashierName, openingCash = 0 }) => {
+    const { shifts } = get();
+    const highestNumber = shifts.reduce((max, s) => Math.max(max, s.shiftNumber || 0), 0);
+    const newShift = {
+      id: generateId('shift'),
+      shiftNumber: highestNumber + 1,
+      cashierName: cashierName?.trim() || 'Kassir',
+      openedAt: new Date().toISOString(),
+      openingCash: Math.max(0, Number(openingCash) || 0),
+      status: 'open',
+    };
+
+    set({ currentShift: newShift });
+    get()._persist();
+    return { success: true, shift: newShift };
+  },
+
+  // Close the current shift and generate Z-Report
+  closeShift: ({ actualCash, notes = '' }) => {
+    const { currentShift, closedOrders, shifts } = get();
+    if (!currentShift) {
+      return { success: false, message: 'Hozirda ochiq smena mavjud emas!' };
+    }
+
+    const shiftOrders = closedOrders.filter(
+      (o) => o.shiftId === currentShift.id || (!o.shiftId && o.closedAt >= currentShift.openedAt)
+    );
+
+    const cashTotal = shiftOrders
+      .filter((o) => o.paymentMethod === 'naqd')
+      .reduce((sum, o) => sum + (o.finalTotal || 0), 0);
+
+    const cardTotal = shiftOrders
+      .filter((o) => o.paymentMethod === 'karta')
+      .reduce((sum, o) => sum + (o.finalTotal || 0), 0);
+
+    const discountTotal = shiftOrders.reduce((sum, o) => sum + (o.discountAmount || 0), 0);
+    const totalRevenue = cashTotal + cardTotal;
+    const openingCash = Number(currentShift.openingCash) || 0;
+    const expectedCashInDrawer = openingCash + cashTotal;
+    const closingCashActual = Number(actualCash) || 0;
+    const cashDifference = closingCashActual - expectedCashInDrawer;
+
+    const closedShift = {
+      ...currentShift,
+      closedAt: new Date().toISOString(),
+      status: 'closed',
+      openingCash,
+      closingCashActual,
+      expectedCashInDrawer,
+      cashDifference,
+      cashTotal,
+      cardTotal,
+      discountTotal,
+      totalRevenue,
+      totalOrdersCount: shiftOrders.length,
+      orderIds: shiftOrders.map((o) => o.id),
+      notes: notes?.trim() || '',
+    };
+
+    const updatedShifts = [closedShift, ...shifts];
+
+    set({
+      currentShift: null,
+      shifts: updatedShifts,
+    });
+    get()._persist();
+
+    return { success: true, shift: closedShift };
+  },
+
   // Reset to initial demo state
   resetAllDemoData: () => {
     storageService.resetAllDemoData();
@@ -454,6 +568,8 @@ export const usePOSStore = create((set, get) => ({
       activeOrders: storageService.getActiveOrders(),
       closedOrders: storageService.getClosedOrders(),
       settings: storageService.getSettings(),
+      currentShift: storageService.getCurrentShift(),
+      shifts: storageService.getShifts(),
     });
   },
 }));

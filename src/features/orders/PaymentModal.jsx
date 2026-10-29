@@ -6,11 +6,14 @@ import {
   Coins,
   Check,
   AlertTriangle,
+  AlertCircle,
 } from 'lucide-react';
 import { Modal } from '../../components/ui/Modal';
 import { Button } from '../../components/ui/Button';
 import { formatCurrency } from '../../utils/formatters';
 import { useAppConfigStore } from '../../store/useAppConfigStore';
+import { usePOSStore } from '../../store/usePOSStore';
+import { OpenShiftModal } from '../shifts/OpenShiftModal';
 
 export function PaymentModal({
   isOpen,
@@ -21,8 +24,10 @@ export function PaymentModal({
   isProcessing = false,
 }) {
   const { t, localize, lang } = useAppConfigStore();
+  const { currentShift } = usePOSStore();
   const [paymentMethod, setPaymentMethod] = useState('naqd'); // 'naqd' | 'karta'
   const [cashGiven, setCashGiven] = useState('');
+  const [isOpenShiftOpen, setIsOpenShiftOpen] = useState(false);
 
   if (!order || !room) return null;
 
@@ -71,6 +76,23 @@ export function PaymentModal({
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
+        {/* Warning if no active cashier shift is open */}
+        {!currentShift && (
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="leading-tight">{t('shift.need_open_warning')}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOpenShiftOpen(true)}
+              className="px-2.5 py-1 rounded-lg bg-amber-600 text-white font-bold text-[11px] shrink-0 hover:bg-amber-700 transition-colors cursor-pointer"
+            >
+              {t('shift.open')}
+            </button>
+          </div>
+        )}
+
         {/* Total Display */}
         <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/60 text-center">
           <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
@@ -281,6 +303,12 @@ export function PaymentModal({
           </Button>
         </div>
       </div>
+
+      {/* Quick Open Shift Modal */}
+      <OpenShiftModal
+        isOpen={isOpenShiftOpen}
+        onClose={() => setIsOpenShiftOpen(false)}
+      />
     </Modal>
   );
 }

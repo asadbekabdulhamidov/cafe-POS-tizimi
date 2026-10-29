@@ -298,6 +298,32 @@ export const DICTIONARY = {
     latn: 'Ilova to‘liq ekran rejimida o‘rnatilgan!',
     cyrl: 'Илова тўлиқ экран режимида ўрнатилган!',
   },
+
+  // Shifts / Smena & Cashier Management
+  'shift.title': { latn: 'Kassa smenasi', cyrl: 'Касса сменаси' },
+  'shift.open': { latn: 'Smena ochish', cyrl: 'Смена очиш' },
+  'shift.close': { latn: 'Smenani yopish (Z-Hisobot)', cyrl: 'Сменани ёпиш (Z-Ҳисобот)' },
+  'shift.active': { latn: 'Faol smena', cyrl: 'Фаол смена' },
+  'shift.closed': { latn: 'Smena yopiq', cyrl: 'Смена ёпиқ' },
+  'shift.cashier': { latn: 'Kassir', cyrl: 'Кассир' },
+  'shift.opening_cash': { latn: 'Boshlang‘ich kassa (qoldiq pul)', cyrl: 'Бошланғич касса (қолдиқ пул)' },
+  'shift.cash_in_drawer': { latn: 'Kutilayotgan naqd pul', cyrl: 'Кутилаётган нақд пул' },
+  'shift.actual_cash': { latn: 'Sanalgan naqd pul (faktik)', cyrl: 'Саналган нақд пул (фактик)' },
+  'shift.difference': { latn: 'Farq', cyrl: 'Фарқ' },
+  'shift.no_diff': { latn: 'Kassa to‘g‘ri (0 so‘m)', cyrl: 'Касса тўғри (0 сўм)' },
+  'shift.shortage': { latn: 'Kamomad', cyrl: 'Камомад' },
+  'shift.surplus': { latn: 'Ortiqcha', cyrl: 'Ортиқча' },
+  'shift.z_report': { latn: 'Z-Hisobot', cyrl: 'Z-Ҳисобот' },
+  'shift.history': { latn: 'Smenalar tarixi', cyrl: 'Сменалар тарихи' },
+  'shift.orders_count': { latn: 'Yopilgan cheklar soni', cyrl: 'Ёпилган чеклар сони' },
+  'shift.duration': { latn: 'Davomiyligi', cyrl: 'Давомийлиги' },
+  'shift.opened_at': { latn: 'Ochilgan vaqt', cyrl: 'Очилган вақт' },
+  'shift.closed_at': { latn: 'Yopilgan vaqt', cyrl: 'Ёпилган вақт' },
+  'shift.notes': { latn: 'Izoh / Sabab', cyrl: 'Изоҳ / Сабаб' },
+  'shift.need_open_warning': {
+    latn: 'Kassa smenasi ochilmagan! Kassirlar hisobi qorishmasligi uchun smenani oching.',
+    cyrl: 'Касса сменаси очилмаган! Кассирлар ҳисоби қоришмаслиги учун сменани очинг.',
+  },
 };
 
 /**
